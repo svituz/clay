@@ -18,8 +18,8 @@ I1
 tS'Field'
 p6
 S'ST'
-I1
-NS'Field Separator'
+S'FIELD_SEPARATOR'
+NI1
 t(g3
 g5
 S'MSH_2'
@@ -27,8 +27,8 @@ S'MSH_2'
 I1
 tg6
 S'ST'
-I4
-NS'Encoding Characters'
+S'ENCODING_CHARACTERS'
+NI4
 t(g3
 g4
 S'MSH_3'
@@ -41,9 +41,9 @@ tp7
 S'Component'
 p8
 S'IS'
-I20
+S'NAMESPACE_ID'
 S'HL70300'
-S'namespace ID'
+I20
 t(g3
 g5
 S'HD_2'
@@ -52,24 +52,24 @@ I1
 tp9
 g8
 S'ST'
-I199
-NS'universal ID'
+S'UNIVERSAL_ID'
+NI199
 t(g3
 g5
 S'HD_3'
 (tg9
 g8
 S'ID'
-I6
+S'UNIVERSAL_ID_TYPE'
 S'HL70301'
-S'universal ID type'
+I6
 tt(I1
 I1
 tg6
 S'HD'
-I180
+S'SENDING_APPLICATION'
 S'HL70361'
-S'Sending Application'
+I180
 t(g3
 g4
 S'MSH_4'
@@ -79,33 +79,33 @@ S'HD_1'
 (tg7
 g8
 S'IS'
-I20
+S'NAMESPACE_ID'
 S'HL70300'
-S'namespace ID'
+I20
 t(g3
 g5
 S'HD_2'
 (tg9
 g8
 S'ST'
-I199
-NS'universal ID'
+S'UNIVERSAL_ID'
+NI199
 t(g3
 g5
 S'HD_3'
 (tg9
 g8
 S'ID'
-I6
+S'UNIVERSAL_ID_TYPE'
 S'HL70301'
-S'universal ID type'
+I6
 tt(I1
 I1
 tg6
 S'HD'
-I180
+S'SENDING_FACILITY'
 S'HL70362'
-S'Sending Facility'
+I180
 t(g3
 g4
 S'MSH_5'
@@ -115,33 +115,33 @@ S'HD_1'
 (tg7
 g8
 S'IS'
-I20
+S'NAMESPACE_ID'
 S'HL70300'
-S'namespace ID'
+I20
 t(g3
 g5
 S'HD_2'
 (tg9
 g8
 S'ST'
-I199
-NS'universal ID'
+S'UNIVERSAL_ID'
+NI199
 t(g3
 g5
 S'HD_3'
 (tg9
 g8
 S'ID'
-I6
+S'UNIVERSAL_ID_TYPE'
 S'HL70301'
-S'universal ID type'
+I6
 tt(I1
 I1
 tg6
 S'HD'
-I180
+S'RECEIVING_APPLICATION'
 S'HL70361'
-S'Receiving Application'
+I180
 t(g3
 g4
 S'MSH_6'
@@ -151,33 +151,33 @@ S'HD_1'
 (tg7
 g8
 S'IS'
-I20
+S'NAMESPACE_ID'
 S'HL70300'
-S'namespace ID'
+I20
 t(g3
 g5
 S'HD_2'
 (tg9
 g8
 S'ST'
-I199
-NS'universal ID'
+S'UNIVERSAL_ID'
+NI199
 t(g3
 g5
 S'HD_3'
 (tg9
 g8
 S'ID'
-I6
+S'UNIVERSAL_ID_TYPE'
 S'HL70301'
-S'universal ID type'
+I6
 tt(I1
 I1
 tg6
 S'HD'
-I180
+S'RECEIVING_FACILITY'
 S'HL70362'
-S'Receiving Facility'
+I180
 t(g3
 g4
 S'MSH_7'
@@ -187,23 +187,23 @@ S'TS_1'
 (tg7
 g8
 S'DTM'
-I24
-NS'time'
+S'TIME'
+NI24
 t(g3
 g5
 S'TS_2'
 (tg9
 g8
 S'ST'
-I1
+S'DEGREE_OF_PRECISION'
 S'HL70529'
-S'degree of precision'
+I1
 tt(I1
 I1
 tg6
 S'TS'
-I26
-NS'Date/Time Of Message'
+S'DATE_TIME_OF_MESSAGE'
+NI26
 t(g3
 g5
 S'MSH_8'
@@ -211,8 +211,8 @@ S'MSH_8'
 I1
 tg6
 S'ST'
-I40
-NS'Security'
+S'SECURITY'
+NI40
 t(g3
 g4
 S'MSH_9'
@@ -222,33 +222,33 @@ S'MSG_1'
 (tg7
 g8
 S'ID'
-I3
+S'MESSAGE_CODE'
 S'HL70076'
-S'message code'
+I3
 t(g3
 g5
 S'MSG_2'
 (tg7
 g8
 S'ID'
-I3
+S'TRIGGER_EVENT'
 S'HL70003'
-S'trigger event'
+I3
 t(g3
 g5
 S'MSG_3'
 (tg7
 g8
 S'ID'
-I7
+S'MESSAGE_STRUCTURE'
 S'HL70354'
-S'message structure'
+I7
 tt(I1
 I1
 tg6
 S'MSG'
-I13
-NS'Message Type'
+S'MESSAGE_TYPE'
+NI13
 t(g3
 g5
 S'MSH_10'
@@ -256,8 +256,8 @@ S'MSH_10'
 I1
 tg6
 S'ST'
-I20
-NS'Message Control ID'
+S'MESSAGE_CONTROL_ID'
+NI20
 t(g3
 g4
 S'MSH_11'
@@ -267,24 +267,24 @@ S'PT_1'
 (tg7
 g8
 S'ID'
-I1
+S'PROCESSING_ID'
 S'HL70103'
-S'processing ID'
+I1
 t(g3
 g5
 S'PT_2'
 (tg9
 g8
 S'ID'
-I1
+S'PROCESSING_MODE'
 S'HL70207'
-S'processing mode'
+I1
 tt(I1
 I1
 tg6
 S'PT'
-I3
-NS'Processing ID'
+S'PROCESSING_ID'
+NI3
 t(g3
 g4
 S'MSH_12'
@@ -294,9 +294,9 @@ S'VID_1'
 (tg7
 g8
 S'ID'
-I5
+S'VERSION_ID'
 S'HL70104'
-S'version ID'
+I5
 t(g3
 g4
 S'VID_2'
@@ -307,56 +307,56 @@ S'CE_1'
 S'SubComponent'
 p10
 S'ST'
-I20
-NS'identifier'
+S'IDENTIFIER'
+NI20
 t(g3
 g5
 S'CE_2'
 (tg9
 g10
 S'ST'
-I199
-NS'text'
+S'TEXT'
+NI199
 t(g3
 g5
 S'CE_3'
 (tg9
 g10
 S'ID'
-I20
+S'NAME_OF_CODING_SYSTEM'
 S'HL70396'
-S'name of coding system'
+I20
 t(g3
 g5
 S'CE_4'
 (tg9
 g10
 S'ST'
-I20
-NS'alternate identifier'
+S'ALTERNATE_IDENTIFIER'
+NI20
 t(g3
 g5
 S'CE_5'
 (tg9
 g10
 S'ST'
-I199
-NS'alternate text'
+S'ALTERNATE_TEXT'
+NI199
 t(g3
 g5
 S'CE_6'
 (tg9
 g10
 S'ID'
-I20
+S'NAME_OF_ALTERNATE_CODING_SYSTEM'
 S'HL70396'
-S'name of alternate coding system'
+I20
 ttg9
 g8
 S'CE'
-I483
+S'INTERNATIONALIZATION_CODE'
 S'HL70399'
-S'internationalization code'
+I483
 t(g3
 g4
 S'VID_3'
@@ -366,61 +366,61 @@ S'CE_1'
 (tg9
 g10
 S'ST'
-I20
-NS'identifier'
+S'IDENTIFIER'
+NI20
 t(g3
 g5
 S'CE_2'
 (tg9
 g10
 S'ST'
-I199
-NS'text'
+S'TEXT'
+NI199
 t(g3
 g5
 S'CE_3'
 (tg9
 g10
 S'ID'
-I20
+S'NAME_OF_CODING_SYSTEM'
 S'HL70396'
-S'name of coding system'
+I20
 t(g3
 g5
 S'CE_4'
 (tg9
 g10
 S'ST'
-I20
-NS'alternate identifier'
+S'ALTERNATE_IDENTIFIER'
+NI20
 t(g3
 g5
 S'CE_5'
 (tg9
 g10
 S'ST'
-I199
-NS'alternate text'
+S'ALTERNATE_TEXT'
+NI199
 t(g3
 g5
 S'CE_6'
 (tg9
 g10
 S'ID'
-I20
+S'NAME_OF_ALTERNATE_CODING_SYSTEM'
 S'HL70396'
-S'name of alternate coding system'
+I20
 ttg9
 g8
 S'CE'
-I483
-NS'international version ID'
+S'INTERNATIONAL_VERSION_ID'
+NI483
 tt(I1
 I1
 tg6
 S'VID'
-I60
-NS'Version ID'
+S'VERSION_ID'
+NI60
 t(g3
 g5
 S'MSH_13'
@@ -428,8 +428,8 @@ S'MSH_13'
 I1
 tg6
 S'NM'
-I15
-NS'Sequence Number'
+S'SEQUENCE_NUMBER'
+NI15
 t(g3
 g5
 S'MSH_14'
@@ -437,8 +437,8 @@ S'MSH_14'
 I1
 tg6
 S'ST'
-I180
-NS'Continuation Pointer'
+S'CONTINUATION_POINTER'
+NI180
 t(g3
 g5
 S'MSH_15'
@@ -446,9 +446,9 @@ S'MSH_15'
 I1
 tg6
 S'ID'
-I2
+S'ACCEPT_ACKNOWLEDGMENT_TYPE'
 S'HL70155'
-S'Accept Acknowledgment Type'
+I2
 t(g3
 g5
 S'MSH_16'
@@ -456,9 +456,9 @@ S'MSH_16'
 I1
 tg6
 S'ID'
-I2
+S'APPLICATION_ACKNOWLEDGMENT_TYPE'
 S'HL70155'
-S'Application Acknowledgment Type'
+I2
 t(g3
 g5
 S'MSH_17'
@@ -466,9 +466,9 @@ S'MSH_17'
 I1
 tg6
 S'ID'
-I3
+S'COUNTRY_CODE'
 S'HL70399'
-S'Country Code'
+I3
 t(g3
 g5
 S'MSH_18'
@@ -476,9 +476,9 @@ S'MSH_18'
 I-1
 tg6
 S'ID'
-I16
+S'CHARACTER_SET'
 S'HL70211'
-S'Character Set'
+I16
 t(g3
 g4
 S'MSH_19'
@@ -488,56 +488,56 @@ S'CE_1'
 (tg9
 g8
 S'ST'
-I20
-NS'identifier'
+S'IDENTIFIER'
+NI20
 t(g3
 g5
 S'CE_2'
 (tg9
 g8
 S'ST'
-I199
-NS'text'
+S'TEXT'
+NI199
 t(g3
 g5
 S'CE_3'
 (tg9
 g8
 S'ID'
-I20
+S'NAME_OF_CODING_SYSTEM'
 S'HL70396'
-S'name of coding system'
+I20
 t(g3
 g5
 S'CE_4'
 (tg9
 g8
 S'ST'
-I20
-NS'alternate identifier'
+S'ALTERNATE_IDENTIFIER'
+NI20
 t(g3
 g5
 S'CE_5'
 (tg9
 g8
 S'ST'
-I199
-NS'alternate text'
+S'ALTERNATE_TEXT'
+NI199
 t(g3
 g5
 S'CE_6'
 (tg9
 g8
 S'ID'
-I20
+S'NAME_OF_ALTERNATE_CODING_SYSTEM'
 S'HL70396'
-S'name of alternate coding system'
+I20
 tt(I0
 I1
 tg6
 S'CE'
-I250
-NS'Principal Language Of Message'
+S'PRINCIPAL_LANGUAGE_OF_MESSAGE'
+NI250
 t(g3
 g5
 S'MSH_20'
@@ -545,9 +545,9 @@ S'MSH_20'
 I1
 tg6
 S'ID'
-I20
+S'ALTERNATE_CHARACTER_SET_HANDLING_SCHEME'
 S'HL70356'
-S'Alternate Character Set Handling Scheme'
+I20
 t(g3
 g4
 S'MSH_21'
@@ -557,40 +557,40 @@ S'EI_1'
 (tg9
 g8
 S'ST'
-I199
-NS'entity identifier'
+S'ENTITY_IDENTIFIER'
+NI199
 t(g3
 g5
 S'EI_2'
 (tg9
 g8
 S'IS'
-I20
+S'NAMESPACE_ID'
 S'HL70363'
-S'namespace ID'
+I20
 t(g3
 g5
 S'EI_3'
 (tg9
 g8
 S'ST'
-I199
-NS'universal ID'
+S'UNIVERSAL_ID'
+NI199
 t(g3
 g5
 S'EI_4'
 (tg9
 g8
 S'ID'
-I6
+S'UNIVERSAL_ID_TYPE'
 S'HL70301'
-S'universal ID type'
+I6
 tt(I0
 I-1
 tg6
 S'EI'
-I427
-NS'Message Profile Identifier'
+S'MESSAGE_PROFILE_IDENTIFIER'
+NI427
 tt(I1
 I1
 tS'Segment'
@@ -607,42 +607,42 @@ S'XON_1'
 (tg7
 g8
 S'ST'
-I50
-NS'organization name'
+S'ORGANIZATION_NAME'
+NI50
 t(g3
 g5
 S'XON_2'
 (tg9
 g8
 S'IS'
-I20
+S'ORGANIZATION_NAME_TYPE_CODE'
 S'HL70204'
-S'organization name type code'
+I20
 t(g3
 g5
 S'XON_3'
 (tg9
 g8
 S'NM'
-I4
-NS'ID number'
+S'ID_NUMBER'
+NI4
 t(g3
 g5
 S'XON_4'
 (tg9
 g8
 S'NM'
-I1
-NS'check digit'
+S'CHECK_DIGIT'
+NI1
 t(g3
 g5
 S'XON_5'
 (tg9
 g8
 S'ID'
-I3
+S'CHECK_DIGIT_SCHEME'
 S'HL70061'
-S'check digit scheme'
+I3
 t(g3
 g4
 S'XON_6'
@@ -652,41 +652,41 @@ S'HD_1'
 (tg9
 g10
 S'IS'
-I20
+S'NAMESPACE_ID'
 S'HL70300'
-S'namespace ID'
+I20
 t(g3
 g5
 S'HD_2'
 (tg9
 g10
 S'ST'
-I199
-NS'universal ID'
+S'UNIVERSAL_ID'
+NI199
 t(g3
 g5
 S'HD_3'
 (tg9
 g10
 S'ID'
-I6
+S'UNIVERSAL_ID_TYPE'
 S'HL70301'
-S'universal ID type'
+I6
 ttg9
 g8
 S'HD'
-I227
+S'ASSIGNING_AUTHORITY'
 S'HL70363'
-S'assigning authority'
+I227
 t(g3
 g5
 S'XON_7'
 (tg9
 g8
 S'ID'
-I5
+S'IDENTIFIER_TYPE_CODE'
 S'HL70203'
-S'identifier type code'
+I5
 t(g3
 g4
 S'XON_8'
@@ -696,54 +696,54 @@ S'HD_1'
 (tg9
 g10
 S'IS'
-I20
+S'NAMESPACE_ID'
 S'HL70300'
-S'namespace ID'
+I20
 t(g3
 g5
 S'HD_2'
 (tg9
 g10
 S'ST'
-I199
-NS'universal ID'
+S'UNIVERSAL_ID'
+NI199
 t(g3
 g5
 S'HD_3'
 (tg9
 g10
 S'ID'
-I6
+S'UNIVERSAL_ID_TYPE'
 S'HL70301'
-S'universal ID type'
+I6
 ttg9
 g8
 S'HD'
-I227
-NS'assigning facility ID'
+S'ASSIGNING_FACILITY_ID'
+NI227
 t(g3
 g5
 S'XON_9'
 (tg9
 g8
 S'ID'
-I1
+S'NAME_EEPRESENTATION_CODE'
 S'HL70465'
-S'name eepresentation code'
+I1
 t(g3
 g5
 S'XON_10'
 (tg9
 g8
 S'ST'
-I20
-NS'organization identifier'
+S'ORGANIZATION_IDENTIFIER'
+NI20
 tt(I1
 I1
 tg6
 S'XON'
-I567
-NS'Software Vendor Organization'
+S'SOFTWARE_VENDOR_ORGANIZATION'
+NI567
 t(g3
 g5
 S'SFT_2'
@@ -751,8 +751,8 @@ S'SFT_2'
 I1
 tg6
 S'ST'
-I15
-NS'Software Certified Version or Release Number'
+S'SOFTWARE_CERTIFIED_VERSION_OR_RELEASE_NUMBER'
+NI15
 t(g3
 g5
 S'SFT_3'
@@ -760,8 +760,8 @@ S'SFT_3'
 I1
 tg6
 S'ST'
-I20
-NS'Software Product Name'
+S'SOFTWARE_PRODUCT_NAME'
+NI20
 t(g3
 g5
 S'SFT_4'
@@ -769,8 +769,8 @@ S'SFT_4'
 I1
 tg6
 S'ST'
-I20
-NS'Software Binary ID'
+S'SOFTWARE_BINARY_ID'
+NI20
 t(g3
 g5
 S'SFT_5'
@@ -778,8 +778,8 @@ S'SFT_5'
 I1
 tg6
 S'TX'
-I1024
-NS'Software Product Information'
+S'SOFTWARE_PRODUCT_INFORMATION'
+NI1024
 t(g3
 g4
 S'SFT_6'
@@ -789,23 +789,23 @@ S'TS_1'
 (tg7
 g8
 S'DTM'
-I24
-NS'time'
+S'TIME'
+NI24
 t(g3
 g5
 S'TS_2'
 (tg9
 g8
 S'ST'
-I1
+S'DEGREE_OF_PRECISION'
 S'HL70529'
-S'degree of precision'
+I1
 tt(I0
 I1
 tg6
 S'TS'
-I26
-NS'Software Install Date'
+S'SOFTWARE_INSTALL_DATE'
+NI26
 tt(I0
 I-1
 tg11
@@ -821,57 +821,57 @@ S'CE_1'
 (tg9
 g8
 S'ST'
-I20
-NS'identifier'
+S'IDENTIFIER'
+NI20
 t(g3
 g5
 S'CE_2'
 (tg9
 g8
 S'ST'
-I199
-NS'text'
+S'TEXT'
+NI199
 t(g3
 g5
 S'CE_3'
 (tg9
 g8
 S'ID'
-I20
+S'NAME_OF_CODING_SYSTEM'
 S'HL70396'
-S'name of coding system'
+I20
 t(g3
 g5
 S'CE_4'
 (tg9
 g8
 S'ST'
-I20
-NS'alternate identifier'
+S'ALTERNATE_IDENTIFIER'
+NI20
 t(g3
 g5
 S'CE_5'
 (tg9
 g8
 S'ST'
-I199
-NS'alternate text'
+S'ALTERNATE_TEXT'
+NI199
 t(g3
 g5
 S'CE_6'
 (tg9
 g8
 S'ID'
-I20
+S'NAME_OF_ALTERNATE_CODING_SYSTEM'
 S'HL70396'
-S'name of alternate coding system'
+I20
 tt(I1
 I1
 tg6
 S'CE'
-I250
+S'MESSAGE_QUERY_NAME'
 S'HL70471'
-S'Message Query Name'
+I250
 t(g3
 g5
 S'QPD_2'
@@ -879,8 +879,8 @@ S'QPD_2'
 I1
 tg6
 S'ST'
-I32
-NS'Query Tag'
+S'QUERY_TAG'
+NI32
 t(g3
 g4
 S'QPD_3'
@@ -890,22 +890,22 @@ S'QIP_1'
 (tg7
 g8
 S'ST'
-I12
-NS'segment field name'
+S'SEGMENT_FIELD_NAME'
+NI12
 t(g3
 g5
 S'QIP_2'
 (tg7
 g8
 S'ST'
-I199
-NS'values'
+S'VALUES'
+NI199
 tt(I1
 I-1
 tg6
 S'QIP'
-I212
-NS'Demographics Fields'
+S'DEMOGRAPHICS_FIELDS'
+NI212
 t(g3
 g5
 S'QPD_4'
@@ -913,8 +913,8 @@ S'QPD_4'
 I1
 tg6
 S'NM'
-I16
-NS'Search Confidence Threshold'
+S'SEARCH_CONFIDENCE_THRESHOLD'
+NI16
 t(g3
 g5
 S'QPD_5'
@@ -922,8 +922,8 @@ S'QPD_5'
 I1
 tg6
 S'ST'
-I199
-NS'Algorithm Name'
+S'ALGORITHM_NAME'
+NI199
 t(g3
 g5
 S'QPD_6'
@@ -931,8 +931,8 @@ S'QPD_6'
 I1
 tg6
 S'ST'
-I199
-NS'Algorithm Version'
+S'ALGORITHM_VERSION'
+NI199
 t(g3
 g5
 S'QPD_7'
@@ -940,8 +940,8 @@ S'QPD_7'
 I1
 tg6
 S'ST'
-I199
-NS'Algorithm Description'
+S'ALGORITHM_DESCRIPTION'
+NI199
 t(g3
 g4
 S'QPD_8'
@@ -951,25 +951,25 @@ S'CX_1'
 (tg9
 g8
 S'ST'
-I15
-NS'ID number'
+S'ID_NUMBER'
+NI15
 t(g3
 g5
 S'CX_2'
 (tg9
 g8
 S'ST'
-I1
-NS'check digit'
+S'CHECK_DIGIT'
+NI1
 t(g3
 g5
 S'CX_3'
 (tg9
 g8
 S'ID'
-I3
+S'CHECK_DIGIT_SCHEME'
 S'HL70061'
-S'check digit scheme'
+I3
 t(g3
 g4
 S'CX_4'
@@ -979,41 +979,41 @@ S'HD_1'
 (tg9
 g10
 S'IS'
-I20
+S'NAMESPACE_ID'
 S'HL70300'
-S'namespace ID'
+I20
 t(g3
 g5
 S'HD_2'
 (tg9
 g10
 S'ST'
-I199
-NS'universal ID'
+S'UNIVERSAL_ID'
+NI199
 t(g3
 g5
 S'HD_3'
 (tg9
 g10
 S'ID'
-I6
+S'UNIVERSAL_ID_TYPE'
 S'HL70301'
-S'universal ID type'
+I6
 ttg7
 g8
 S'HD'
-I227
+S'ASSIGNING_AUTHORITY'
 S'HL70363'
-S'assigning authority'
+I227
 t(g3
 g5
 S'CX_5'
 (tg9
 g8
 S'ID'
-I5
+S'IDENTIFIER_TYPE_CODE'
 S'HL70203'
-S'identifier type code'
+I5
 t(g3
 g4
 S'CX_6'
@@ -1023,47 +1023,47 @@ S'HD_1'
 (tg9
 g10
 S'IS'
-I20
+S'NAMESPACE_ID'
 S'HL70300'
-S'namespace ID'
+I20
 t(g3
 g5
 S'HD_2'
 (tg9
 g10
 S'ST'
-I199
-NS'universal ID'
+S'UNIVERSAL_ID'
+NI199
 t(g3
 g5
 S'HD_3'
 (tg9
 g10
 S'ID'
-I6
+S'UNIVERSAL_ID_TYPE'
 S'HL70301'
-S'universal ID type'
+I6
 ttg9
 g8
 S'HD'
-I227
-NS'assigning facility'
+S'ASSIGNING_FACILITY'
+NI227
 t(g3
 g5
 S'CX_7'
 (tg9
 g8
 S'DT'
-I8
-NS'effective date'
+S'EFFECTIVE_DATE'
+NI8
 t(g3
 g5
 S'CX_8'
 (tg9
 g8
 S'DT'
-I8
-NS'expiration date'
+S'EXPIRATION_DATE'
+NI8
 t(g3
 g4
 S'CX_9'
@@ -1073,79 +1073,79 @@ S'CWE_1'
 (tg9
 g10
 S'ST'
-I20
-NS'identifier'
+S'IDENTIFIER'
+NI20
 t(g3
 g5
 S'CWE_2'
 (tg9
 g10
 S'ST'
-I199
-NS'text'
+S'TEXT'
+NI199
 t(g3
 g5
 S'CWE_3'
 (tg9
 g10
 S'ID'
-I20
+S'NAME_OF_CODING_SYSTEM'
 S'HL70396'
-S'name of coding system'
+I20
 t(g3
 g5
 S'CWE_4'
 (tg9
 g10
 S'ST'
-I20
-NS'alternate identifier'
+S'ALTERNATE_IDENTIFIER'
+NI20
 t(g3
 g5
 S'CWE_5'
 (tg9
 g10
 S'ST'
-I199
-NS'alternate text'
+S'ALTERNATE_TEXT'
+NI199
 t(g3
 g5
 S'CWE_6'
 (tg9
 g10
 S'ID'
-I20
+S'NAME_OF_ALTERNATE_CODING_SYSTEM'
 S'HL70396'
-S'name of alternate coding system'
+I20
 t(g3
 g5
 S'CWE_7'
 (tg9
 g10
 S'ST'
-I10
-NS'coding system version ID'
+S'CODING_SYSTEM_VERSION_ID'
+NI10
 t(g3
 g5
 S'CWE_8'
 (tg9
 g10
 S'ST'
-I10
-NS'alternate coding system version ID'
+S'ALTERNATE_CODING_SYSTEM_VERSION_ID'
+NI10
 t(g3
 g5
 S'CWE_9'
 (tg9
 g10
 S'ST'
-I199
-NS'original text'
+S'ORIGINAL_TEXT'
+NI199
 ttg9
 g8
 S'CWE'
-I706
-NS'assigning jurisdiction'
+S'ASSIGNING_JURISDICTION'
+NI706
 t(g3
 g4
 S'CX_10'
@@ -1155,85 +1155,85 @@ S'CWE_1'
 (tg9
 g10
 S'ST'
-I20
-NS'identifier'
+S'IDENTIFIER'
+NI20
 t(g3
 g5
 S'CWE_2'
 (tg9
 g10
 S'ST'
-I199
-NS'text'
+S'TEXT'
+NI199
 t(g3
 g5
 S'CWE_3'
 (tg9
 g10
 S'ID'
-I20
+S'NAME_OF_CODING_SYSTEM'
 S'HL70396'
-S'name of coding system'
+I20
 t(g3
 g5
 S'CWE_4'
 (tg9
 g10
 S'ST'
-I20
-NS'alternate identifier'
+S'ALTERNATE_IDENTIFIER'
+NI20
 t(g3
 g5
 S'CWE_5'
 (tg9
 g10
 S'ST'
-I199
-NS'alternate text'
+S'ALTERNATE_TEXT'
+NI199
 t(g3
 g5
 S'CWE_6'
 (tg9
 g10
 S'ID'
-I20
+S'NAME_OF_ALTERNATE_CODING_SYSTEM'
 S'HL70396'
-S'name of alternate coding system'
+I20
 t(g3
 g5
 S'CWE_7'
 (tg9
 g10
 S'ST'
-I10
-NS'coding system version ID'
+S'CODING_SYSTEM_VERSION_ID'
+NI10
 t(g3
 g5
 S'CWE_8'
 (tg9
 g10
 S'ST'
-I10
-NS'alternate coding system version ID'
+S'ALTERNATE_CODING_SYSTEM_VERSION_ID'
+NI10
 t(g3
 g5
 S'CWE_9'
 (tg9
 g10
 S'ST'
-I199
-NS'original text'
+S'ORIGINAL_TEXT'
+NI199
 ttg9
 g8
 S'CWE'
-I705
-NS'assigning agency or department'
+S'ASSIGNING_AGENCY_OR_DEPARTMENT'
+NI705
 tt(I0
 I-1
 tg6
 S'CX'
-I1905
-NS'What Domains Returned'
+S'WHAT_DOMAINS_RETURNED'
+NI1905
 tt(I1
 I1
 tg11
@@ -1247,9 +1247,9 @@ S'RCP_1'
 I1
 tg6
 S'ID'
-I1
+S'QUERY_PRIORITY'
 S'HL70091'
-S'Query Priority'
+I1
 t(g3
 g4
 S'RCP_2'
@@ -1259,8 +1259,8 @@ S'CQ_1'
 (tg9
 g8
 S'NM'
-I16
-NS'Quantity'
+S'QUANTITY'
+NI16
 t(g3
 g4
 S'CQ_2'
@@ -1270,62 +1270,62 @@ S'CE_1'
 (tg9
 g10
 S'ST'
-I20
-NS'identifier'
+S'IDENTIFIER'
+NI20
 t(g3
 g5
 S'CE_2'
 (tg9
 g10
 S'ST'
-I199
-NS'text'
+S'TEXT'
+NI199
 t(g3
 g5
 S'CE_3'
 (tg9
 g10
 S'ID'
-I20
+S'NAME_OF_CODING_SYSTEM'
 S'HL70396'
-S'name of coding system'
+I20
 t(g3
 g5
 S'CE_4'
 (tg9
 g10
 S'ST'
-I20
-NS'alternate identifier'
+S'ALTERNATE_IDENTIFIER'
+NI20
 t(g3
 g5
 S'CE_5'
 (tg9
 g10
 S'ST'
-I199
-NS'alternate text'
+S'ALTERNATE_TEXT'
+NI199
 t(g3
 g5
 S'CE_6'
 (tg9
 g10
 S'ID'
-I20
+S'NAME_OF_ALTERNATE_CODING_SYSTEM'
 S'HL70396'
-S'name of alternate coding system'
+I20
 ttg9
 g8
 S'CE'
-I483
+S'UNITS'
 S'HL70126'
-S'units'
+I483
 tt(I0
 I1
 tg6
 S'CQ'
-I499
-NS'Quantity Limited Request'
+S'QUANTITY_LIMITED_REQUEST'
+NI499
 t(g3
 g4
 S'RCP_3'
@@ -1335,57 +1335,57 @@ S'CE_1'
 (tg9
 g8
 S'ST'
-I20
-NS'identifier'
+S'IDENTIFIER'
+NI20
 t(g3
 g5
 S'CE_2'
 (tg9
 g8
 S'ST'
-I199
-NS'text'
+S'TEXT'
+NI199
 t(g3
 g5
 S'CE_3'
 (tg9
 g8
 S'ID'
-I20
+S'NAME_OF_CODING_SYSTEM'
 S'HL70396'
-S'name of coding system'
+I20
 t(g3
 g5
 S'CE_4'
 (tg9
 g8
 S'ST'
-I20
-NS'alternate identifier'
+S'ALTERNATE_IDENTIFIER'
+NI20
 t(g3
 g5
 S'CE_5'
 (tg9
 g8
 S'ST'
-I199
-NS'alternate text'
+S'ALTERNATE_TEXT'
+NI199
 t(g3
 g5
 S'CE_6'
 (tg9
 g8
 S'ID'
-I20
+S'NAME_OF_ALTERNATE_CODING_SYSTEM'
 S'HL70396'
-S'name of alternate coding system'
+I20
 tt(I0
 I1
 tg6
 S'CE'
-I478
+S'RESPONSE_MODALITY'
 S'HL70394'
-S'Response Modality'
+I478
 t(g3
 g4
 S'RCP_4'
@@ -1395,23 +1395,23 @@ S'TS_1'
 (tg7
 g8
 S'DTM'
-I24
-NS'time'
+S'TIME'
+NI24
 t(g3
 g5
 S'TS_2'
 (tg9
 g8
 S'ST'
-I1
+S'DEGREE_OF_PRECISION'
 S'HL70529'
-S'degree of precision'
+I1
 tt(I0
 I1
 tg6
 S'TS'
-I26
-NS'Execution and Delivery Time'
+S'EXECUTION_AND_DELIVERY_TIME'
+NI26
 t(g3
 g5
 S'RCP_5'
@@ -1419,9 +1419,9 @@ S'RCP_5'
 I1
 tg6
 S'ID'
-I1
+S'MODIFY_INDICATOR'
 S'HL70395'
-S'Modify Indicator'
+I1
 t(g3
 g4
 S'RCP_6'
@@ -1431,23 +1431,23 @@ S'SRT_1'
 (tg7
 g8
 S'ST'
-I12
-NS'sort-by field'
+S'SORT_BY_FIELD'
+NI12
 t(g3
 g5
 S'SRT_2'
 (tg9
 g8
 S'ID'
-I2
+S'SEQUENCING'
 S'HL70397'
-S'sequencing'
+I2
 tt(I0
 I-1
 tg6
 S'SRT'
-I512
-NS'Sort-by Field'
+S'SORT_BY_FIELD'
+NI512
 t(g3
 g5
 S'RCP_7'
@@ -1455,8 +1455,8 @@ S'RCP_7'
 I-1
 tg6
 S'ID'
-I256
-NS'Segment group inclusion'
+S'SEGMENT_GROUP_INCLUSION'
+NI256
 tt(I1
 I1
 tg11
@@ -1470,8 +1470,8 @@ S'DSC_1'
 I1
 tg6
 S'ST'
-I180
-NS'Continuation Pointer'
+S'CONTINUATION_POINTER'
+NI180
 t(g3
 g5
 S'DSC_2'
@@ -1479,9 +1479,9 @@ S'DSC_2'
 I1
 tg6
 S'ID'
-I1
+S'CONTINUATION_STYLE'
 S'HL70398'
-S'Continuation Style'
+I1
 tt(I0
 I1
 tg11
