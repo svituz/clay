@@ -14,7 +14,7 @@ class JSONSerializer(Serializer):
         pass
 
     def serialize(self, datum):
-        return(simplejson.dumps(datum))
+        return simplejson.dumps(datum)
 
 
 class DummySerializer(Serializer):
@@ -22,7 +22,7 @@ class DummySerializer(Serializer):
         pass
 
     def serialize(self, datum):
-        return(datum)
+        return datum
 
 # Imports the other Serializers
 from .avro_serializer import AvroSerializer

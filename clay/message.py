@@ -7,10 +7,13 @@ from clay.exceptions import SchemaException, InvalidMessage
 class _item(object):
     def __init__(self, fields):
         self._attrs = []
+
+        # add field names to _attrs list
         for field in fields:
             self._attrs.append(field["name"])
             if isinstance(field["type"], list):
                 # We allow only two kind of types
+                # FIXME: we are taking that the list contains only two types
                 if "null" not in field["type"]:
                     raise SchemaException("The schema structure is not valid: found more than one \
                                           field type")
@@ -20,7 +23,7 @@ class _item(object):
                 field_type = field["type"]
 
             if self._is_primitive_type(field_type):
-                setattr(self, field["name"], None)
+                setattr(self, field["name"], field.get("default"))
             elif isinstance(field_type, MutableMapping):
                 setattr(self, field["name"], _array(field_type["items"]["fields"]))
 
@@ -36,6 +39,13 @@ class _item(object):
 
     def __setattr__(self, key, value):
         if key == '_attrs' or key in self._attrs:
+            try:
+                to_be_set = getattr(self, key)
+            except AttributeError:
+                pass
+            else:
+                if isinstance(to_be_set, _array):
+                    raise ValueError("Cannot assign field of complex type")
             super(_item, self).__setattr__(key, value)
         else:
             raise AttributeError("%r object has no attribute %r" % (self.__class__.__name__, key))
@@ -50,6 +60,9 @@ class _item(object):
             return True
         else:
             return type in primitive_types
+
+    def __repr__(self):
+        return repr(self.as_obj())
 
 
 class _array(object):
@@ -78,6 +91,9 @@ class _array(object):
     def __len__(self):
         return len(self._list)
 
+    def __repr__(self):
+        return repr(self._list)
+
 
 class Message(object):
     def __init__(self, serializer, message_type):
@@ -97,7 +113,7 @@ class Message(object):
     def __setattr__(self, name, value):
         try:
             setattr(self.struct, name, value)
-        except:
+        except AttributeError:
             super(Message, self).__setattr__(name, value)
 
     def __getattr__(self, name):
@@ -105,5 +121,7 @@ class Message(object):
             return getattr(self.struct, name)
         except:
             raise AttributeError("%r object has no attribute %r" % (self.__class__.__name__, name))
+
+    fields = property(lambda self: self.struct.as_obj())
 
 # vim:tabstop=4:expandtab
