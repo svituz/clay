@@ -26,4 +26,4 @@ class DummySerializer(Serializer):
 
 # Imports the other Serializers
 from .avro_serializer import AvroSerializer
-from .hl7_serializer import HL7Serializer
+from .hl7_serializer import AbstractHL7Serializer
