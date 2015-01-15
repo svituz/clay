@@ -5,7 +5,7 @@ from .exceptions import SchemaException, InvalidMessage
 from .serializer import DummySerializer
 
 
-class _item(object):
+class _Item(object):
     def __init__(self, fields):
         self._attrs = []
 
@@ -26,7 +26,7 @@ class _item(object):
             if self._is_primitive_type(field_type):
                 setattr(self, field["name"], field.get("default"))
             elif isinstance(field_type, MutableMapping):
-                setattr(self, field["name"], _array(field_type["items"]["fields"]))
+                setattr(self, field["name"], _Array(field_type["items"]["fields"]))
 
     def as_obj(self):
         d = {}
@@ -45,9 +45,9 @@ class _item(object):
             except AttributeError:
                 pass
             else:
-                if isinstance(to_be_set, _array):
+                if isinstance(to_be_set, _Array):
                     raise ValueError("Cannot assign field of complex type")
-            super(_item, self).__setattr__(key, value)
+            super(_Item, self).__setattr__(key, value)
         else:
             raise AttributeError("%r object has no attribute %r" % (self.__class__.__name__, key))
 
@@ -66,13 +66,13 @@ class _item(object):
         return repr(self.as_obj())
 
 
-class _array(object):
+class _Array(object):
     def __init__(self, fields):
         self._list = []
         self.fields = fields
 
     def add(self):
-        self._list.append(_item(self.fields))
+        self._list.append(_Item(self.fields))
 
     def as_obj(self):
         d = []
@@ -106,7 +106,7 @@ class Message(object):
         self.message_type = message_type
         self.domain = self.schema["namespace"]
         self.serializer = serializer(message_type, catalog)
-        self.struct = _item(self.schema["fields"])
+        self.struct = _Item(self.schema["fields"])
 
     def serialize(self):
         return self.serializer.serialize(self.struct.as_obj())

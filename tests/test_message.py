@@ -10,9 +10,9 @@ from pika.exceptions import AMQPConnectionError
 import clay
 from clay.exceptions import InvalidMessage, SchemaException, AMQPError
 from clay.factory import MessageFactory
-from clay.serializer import AvroSerializer, HL7Serializer
+from clay.serializer import AvroSerializer, AbstractHL7Serializer
 from clay.messenger import AMQPMessenger, AMQPBroker
-from clay.message import _item
+from clay.message import _Item
 
 from tests import TEST_CATALOG, TEST_SCHEMA, RABBIT_QUEUE, RABBIT_EXCHANGE
 
@@ -21,7 +21,7 @@ class TestMessage(TestCase):
     def setUp(self):
         clay.add_catalog('TESTS', TEST_CATALOG)
         self.avro_factory = MessageFactory(AvroSerializer)
-        self.hl7_factory = MessageFactory(HL7Serializer)
+        self.hl7_factory = MessageFactory(AbstractHL7Serializer)
 
         self.avro_message = self.avro_factory.create('TEST')
         self.avro_message.id = 1111111
@@ -80,13 +80,13 @@ class TestMessage(TestCase):
 
         m.items.add()
         self.assertEqual(len(m.items), 1)
-        self.assertIsInstance(m.items[0], _item)
+        self.assertIsInstance(m.items[0], _Item)
         m.items[0].name = "bbb"
         self.assertEqual(m.items[0].name, "bbb")
 
         m.items.add()
         self.assertEqual(len(m.items), 2)
-        self.assertIsInstance(m.items[1], _item)
+        self.assertIsInstance(m.items[1], _Item)
         m.items[1].name = "ccc"
         self.assertEqual(m.items[1].name, "ccc")
 
@@ -152,7 +152,7 @@ class TestMessage(TestCase):
         p.join()
 
     def test_amqp_producer_server_down(self):
-        messenger = AMQPMessenger('localhost', 20000) # non existent rabbit server
+        messenger = AMQPMessenger('localhost', 20000)  # non existent rabbit server
         messenger.exchange = RABBIT_EXCHANGE
         messenger.add_queue(RABBIT_QUEUE, False, False)
 
@@ -167,7 +167,7 @@ class TestMessage(TestCase):
 
         # the queue has not been specified yet
         with self.assertRaises(AMQPError):
-            result = messenger.send(self.avro_message)
+            messenger.send(self.avro_message)
 
         messenger.add_queue(RABBIT_QUEUE, False, False)
         result = messenger.send(self.avro_message)
@@ -179,7 +179,7 @@ class TestMessage(TestCase):
             self.assertEqual(message_body, self.avro_encoded)
             self.assertEqual(message_type, self.avro_message.message_type)
 
-        broker = AMQPBroker('localhost', 20000) # non existent rabbit server
+        broker = AMQPBroker('localhost', 20000)  # non existent rabbit server
         broker.handler = handler
         broker.set_queue(RABBIT_QUEUE, False, True)
 
@@ -190,4 +190,3 @@ class TestMessage(TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
