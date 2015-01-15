@@ -1,7 +1,8 @@
 from collections import MutableMapping
 
-from clay import schema_from_name
-from clay.exceptions import SchemaException, InvalidMessage
+from . import schema_from_name
+from .exceptions import SchemaException, InvalidMessage
+from .serializer import DummySerializer
 
 
 class _item(object):
@@ -96,15 +97,15 @@ class _array(object):
 
 
 class Message(object):
-    def __init__(self, serializer, message_type):
+    def __init__(self, message_type, catalog, serializer=DummySerializer):
         try:
-            self.schema = schema_from_name(message_type)[1]
+            self.schema = schema_from_name(message_type, catalog)[1]
         except SchemaException:
             raise InvalidMessage(message_type)
 
         self.message_type = message_type
         self.domain = self.schema["namespace"]
-        self.serializer = serializer(message_type)
+        self.serializer = serializer(message_type, catalog)
         self.struct = _item(self.schema["fields"])
 
     def serialize(self):

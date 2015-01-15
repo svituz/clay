@@ -61,7 +61,6 @@ class AMQPMessenger(Messenger):
             connection = pika.BlockingConnection(conn_param)
             channel = connection.channel()
 
-
             # Checks if the queue is declared, but does not create it if not exists
             channel.queue_declare(queue=message.domain, passive=True)
 

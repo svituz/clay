@@ -6,7 +6,7 @@ from avro.io import DatumWriter, DatumReader, BinaryEncoder, BinaryDecoder, Avro
 
 # Package Imports
 from . import Serializer
-from .. import schema_from_name, schema_from_id
+from .. import schema_from_name
 from ..exceptions import SchemaException
 
 ENVELOPE_SCHEMA = {
@@ -22,8 +22,8 @@ ENVELOPE_SCHEMA = {
 
 class AvroSerializer(Serializer):
 
-    def __init__(self, message_type):
-        schema_id, schema = schema_from_name(message_type)
+    def __init__(self, message_type, schema_catalog):
+        schema_id, schema = schema_from_name(message_type, schema_catalog)
         self.payload_schema_id = schema_id
 
         self.payload_schema = avro.schema.make_avsc_object(schema)
@@ -52,14 +52,14 @@ class AvroSerializer(Serializer):
         return self.envelope_encoder.writer.getvalue()
 
     @staticmethod
-    def deserialize(message, domain):
+    def deserialize(message, catalog):
         envelope_schema = avro.schema.make_avsc_object(ENVELOPE_SCHEMA)
         envelope_reader = DatumReader(envelope_schema)
         envelope_decoder = BinaryDecoder(StringIO(message))
         envelope = envelope_reader.read(envelope_decoder)
 
         payload_id = envelope['id']
-        payload_schema = schema_from_id(payload_id, domain)
+        payload_schema = catalog[payload_id]
         payload_avro_schema = avro.schema.make_avsc_object(payload_schema)
         payload_reader = DatumReader(payload_avro_schema)
         payload_decoder = BinaryDecoder(StringIO(envelope['payload']))

@@ -45,6 +45,7 @@ TEST_WRONG_SCHEMA = {
 
 TEST_CATALOG = {
     "version": 1,
+    "name": "TEST_CATALOG",
     0: TEST_SCHEMA,
     1: TEST_COMPLEX_SCHEMA,
     2: TEST_WRONG_SCHEMA

@@ -4,13 +4,29 @@ CATALOGS = {}
 NAMED_CATALOGS = {}
 
 
-def add_catalog(key, catalog):
-    CATALOGS[key] = catalog
-    NAMED_CATALOGS[key] = dict((v["name"], (k, v)) for (k, v) in catalog.viewitems()
-                               if isinstance(k, int))
+def add_catalog(catalog):
+    CATALOGS[catalog["name"]] = catalog
+    NAMED_CATALOGS[catalog["name"]] = dict((v["name"], (k, v)) for (k, v) in catalog.viewitems()
+                                           if isinstance(k, int))
 
 
-def schema_from_name(schema_name):
+# def schema_from_name(schema_name):
+#     """
+#     It searches the schema with the name :attr:`schema_name` in all the catalog.
+#     It returns the corresponding id of the schema and the schema itself
+#
+#     :param schema_name: The name of the schema to search
+#     :return: a tuple wit the ID of the schema and the schema itself
+#     """
+#     for key, catalog in NAMED_CATALOGS.items():
+#         try:
+#             return catalog[schema_name]
+#         except KeyError:
+#             continue
+#
+#     raise SchemaException("Schema '%s' does not exist" % schema_name)
+
+def schema_from_name(schema_name, schema_catalog):
     """
     It searches the schema with the name :attr:`schema_name` in all the catalog.
     It returns the corresponding id of the schema and the schema itself
@@ -18,13 +34,12 @@ def schema_from_name(schema_name):
     :param schema_name: The name of the schema to search
     :return: a tuple wit the ID of the schema and the schema itself
     """
-    for key, catalog in NAMED_CATALOGS.items():
-        try:
-            return catalog[schema_name]
-        except KeyError:
-            continue
-
-    raise SchemaException("Schema '%s' does not exist" % schema_name)
+    named_catalog = dict((s["name"], (i, s)) for (i, s) in schema_catalog.viewitems()
+                         if isinstance(i, int))
+    try:
+        return named_catalog[schema_name]
+    except KeyError:
+        raise SchemaException("Schema '%s' does not exist" % schema_name)
 
 
 def schema_from_id(schema_id, schema_domain):
