@@ -1,0 +1,7 @@
+CLay: Communication Layer Library
+
+Requirements:
+- Python 2.7
+- Pika Python library (ubuntu: python-pika)
+- Simplejson Python library (ubuntu: python-simplejson)
+- Apache Avro Python Library 1.7.7 (http://avro.apache.org/)
