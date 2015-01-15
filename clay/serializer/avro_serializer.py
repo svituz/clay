@@ -65,6 +65,6 @@ class AvroSerializer(Serializer):
         payload_decoder = BinaryDecoder(StringIO(envelope['payload']))
         payload = payload_reader.read(payload_decoder)
 
-        return payload_id, payload, payload_schema
+        return payload, payload_id, payload_schema
 
 # vim:tabstop=4:expandtab

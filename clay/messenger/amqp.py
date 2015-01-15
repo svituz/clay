@@ -20,6 +20,7 @@ class AMQPMessenger(Messenger):
         self._exchange = None
         self._queues = {}
         self._response = None
+        self._credentials = None
 
     def _set_exchange(self, exchange):
         self._exchange = exchange
@@ -28,6 +29,9 @@ class AMQPMessenger(Messenger):
         return self._exchange
 
     exchange = property(_get_exchange, _set_exchange, doc="The RabbitMQ Topic Exchange property")
+
+    def set_credentials(self, username, password):
+        self._credentials = pika.PlainCredentials(username, password)
 
     def add_queue(self, queue_name, durable, response):
         self._queues[queue_name] = {'durable': durable, 'response': response}
@@ -50,7 +54,10 @@ class AMQPMessenger(Messenger):
         try:
             routing_key = "{}.{}".format(message.domain, message.message_type)
 
-            conn_param = pika.ConnectionParameters(host=self.host, port=self.port)
+            conn_param = pika.ConnectionParameters(
+                host=self.host,
+                port=self.port,
+                credentials=self._credentials)
             connection = pika.BlockingConnection(conn_param)
             channel = connection.channel()
 

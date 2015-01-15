@@ -25,5 +25,12 @@ class DummySerializer(Serializer):
         return datum
 
 # Imports the other Serializers
-from .avro_serializer import AvroSerializer
-from .hl7_serializer import HL7Serializer
+try:
+    from .avro_serializer import AvroSerializer
+except ImportError:
+    pass
+
+try:
+    from .hl7_serializer import HL7Serializer
+except ImportError:
+    pass
