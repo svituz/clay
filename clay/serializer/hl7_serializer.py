@@ -1,7 +1,5 @@
-# Builtins Imports
-import os
-import uuid
-from datetime import datetime
+# Third party imports
+from hl7apy.parser import get_message_info
 
 # Communication Layer Imports
 from . import Serializer
@@ -10,21 +8,29 @@ from ..exceptions import InvalidMessage
 
 class AbstractHL7Serializer(Serializer):
 
+    SERIALIZERS = {}
+
     def __init__(self, message_type):
+        super(AbstractHL7Serializer, self).__init__(message_type)
         if self.__class__ == 'AbstractHL7Serializer':
-            raise Exception("Cannot instantiate AbstractHL7Serializer directly. It is meant to be extended with the \
-                            serializers dictionary")
+            raise Exception("Cannot instantiate AbstractHL7Serializer directly. It is meant to be \
+                            extended with the serializers dictionary")
         try:
-            self.serializer = self.serializers[message_type]()
-        except AttributeError:
-            raise Exception("Missing serializers dictionary. Specify it in the subclass")
+            self.serializer = self.SERIALIZERS[message_type]()
         except KeyError:
             raise InvalidMessage
 
     def serialize(self, datum):
         return self.serializer.serialize(datum)
 
-    def deserialize(self, message, domain):
-        return self.serializer.deserialize(message)
+    @classmethod
+    def deserialize(cls, message, domain):
+        # FIXME: we can avoid usage of hl7apy by copyng the same function here
+        enc_chars, msg_type, version = get_message_info(message)
+        try:
+            serializer = cls.SERIALIZERS[msg_type]
+        except KeyError:
+            raise InvalidMessage
+        return serializer.deserialize(message, domain)
 
 # vim:tabstop=4:expandtab
