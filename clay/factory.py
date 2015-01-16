@@ -22,7 +22,7 @@ class MessageFactory(object):
                         attr.add()
                         _fill_obj(attr[index], item)
 
-        payload_id, payload, payload_schema = self.serializer.deserialize(message, self.catalog)
+        payload, payload_id, payload_schema = self.serializer.deserialize(message, self.catalog)
         message = Message(payload_schema['name'], self.catalog, self.serializer)
         _fill_obj(message, payload)
 
