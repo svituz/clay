@@ -12,11 +12,19 @@ class MessageFactory(object):
         return Message(message_type, self.catalog, self.serializer)
 
     def retrieve(self, message):
-        payload, payload_id, payload_schema = self.serializer.deserialize(message, self.catalog)
+        def _fill_obj(obj, payload):
+            for k, v in payload.iteritems():
+                try:
+                    setattr(obj, k, v)
+                except ValueError:  # complex datatype
+                    attr = getattr(message, k)
+                    for index, item in enumerate(v):
+                        attr.add()
+                        _fill_obj(attr[index], item)
 
+        payload_id, payload, payload_schema = self.serializer.deserialize(message, self.catalog)
         message = Message(payload_schema['name'], self.catalog, self.serializer)
-        for k, v in payload.iteritems():
-            setattr(message, k, v)
+        _fill_obj(message, payload)
 
         return message
 
