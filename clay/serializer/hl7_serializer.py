@@ -10,7 +10,7 @@ class AbstractHL7Serializer(Serializer):
 
     SERIALIZERS = {}
 
-    def __init__(self, message_type):
+    def __init__(self, message_type, catalog):
         super(AbstractHL7Serializer, self).__init__(message_type)
         if self.__class__ == 'AbstractHL7Serializer':
             raise Exception("Cannot instantiate AbstractHL7Serializer directly. It is meant to be \
@@ -24,13 +24,13 @@ class AbstractHL7Serializer(Serializer):
         return self.serializer.serialize(datum)
 
     @classmethod
-    def deserialize(cls, message, domain):
-        # FIXME: we can avoid usage of hl7apy by copyng the same function here
+    def deserialize(cls, message, catalog):
+        # FIXME: we can avoid usage of hl7apy by copying the same function here
         enc_chars, msg_type, version = get_message_info(message)
         try:
             serializer = cls.SERIALIZERS[msg_type]
         except KeyError:
             raise InvalidMessage
-        return serializer.deserialize(message, domain)
+        return serializer.deserialize(message, catalog)
 
 # vim:tabstop=4:expandtab

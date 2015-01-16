@@ -31,6 +31,6 @@ except ImportError:
     pass
 
 try:
-    from .hl7_serializer import HL7Serializer
+    from .hl7_serializer import AbstractHL7Serializer
 except ImportError:
     pass

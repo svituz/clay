@@ -19,9 +19,8 @@ from tests import TEST_CATALOG, TEST_SCHEMA, RABBIT_QUEUE, RABBIT_EXCHANGE
 
 class TestMessage(TestCase):
     def setUp(self):
-        clay.add_catalog('TESTS', TEST_CATALOG)
-        self.avro_factory = MessageFactory(AvroSerializer)
-        self.hl7_factory = MessageFactory(AbstractHL7Serializer)
+        self.avro_factory = MessageFactory(AvroSerializer, TEST_CATALOG)
+        self.hl7_factory = MessageFactory(AbstractHL7Serializer, TEST_CATALOG)
 
         self.avro_message = self.avro_factory.create('TEST')
         self.avro_message.id = 1111111
