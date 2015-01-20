@@ -22,14 +22,17 @@ TEST_COMPLEX_SCHEMA = {
         {"name": "items",
          "type": {
              "type": "array",
-             "items" : {
+             "items": {
                  "type": "record",
                      "name": "items_type",
                      "fields": [
                          {"name": "name", "type": "string"},
                      ]
-                }
-        }},
+                 }}},
+        {"name": "simple_items",
+         "type": {
+             "type": "array",
+             "items": "string"}}
     ]
 }
 

@@ -1,3 +1,5 @@
+from collections import MutableMapping
+
 import clay
 from .message import Message
 
@@ -17,10 +19,13 @@ class MessageFactory(object):
                 try:
                     setattr(obj, k, v)
                 except ValueError:  # complex datatype
-                    attr = getattr(message, k)
+                    attr = getattr(obj, k)
                     for index, item in enumerate(v):
                         attr.add()
-                        _fill_obj(attr[index], item)
+                        if isinstance(item, MutableMapping):
+                            _fill_obj(attr[index], item)
+                        else:
+                            attr[index] = item
 
         payload, payload_id, payload_schema = self.serializer.deserialize(message, self.catalog)
         message = Message(payload_schema['name'], self.catalog, self.serializer)

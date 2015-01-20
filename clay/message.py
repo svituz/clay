@@ -5,6 +5,18 @@ from .exceptions import SchemaException, InvalidMessage
 from .serializer import DummySerializer
 
 
+def _is_primitive_type(t):
+    primitive_types = ("null", "boolean", "int", "long",
+                       "float", "double", "bytes", "string")
+    if isinstance(t, list):
+        for t in t:
+            if t not in primitive_types:
+                return False
+        return True
+    else:
+        return t in primitive_types
+
+
 class _Item(object):
     def __init__(self, fields):
         self._attrs = []
@@ -23,10 +35,10 @@ class _Item(object):
             else:
                 field_type = field["type"]
 
-            if self._is_primitive_type(field_type):
+            if _is_primitive_type(field_type):
                 setattr(self, field["name"], field.get("default"))
             elif isinstance(field_type, MutableMapping):
-                setattr(self, field["name"], _Array(field_type["items"]["fields"]))
+                setattr(self, field["name"], _Array(field_type["items"]))
 
     def as_obj(self):
         d = {}
@@ -51,17 +63,6 @@ class _Item(object):
         else:
             raise AttributeError("%r object has no attribute %r" % (self.__class__.__name__, key))
 
-    def _is_primitive_type(self, type):
-        primitive_types = ("null", "boolean", "int", "long",
-                           "float", "double", "bytes", "string")
-        if isinstance(type, list):
-            for t in type:
-                if t not in primitive_types:
-                    return False
-            return True
-        else:
-            return type in primitive_types
-
     def __repr__(self):
         return repr(self.as_obj())
 
@@ -69,16 +70,25 @@ class _Item(object):
 class _Array(object):
     def __init__(self, fields):
         self._list = []
-        self.fields = fields
+        if _is_primitive_type(fields):
+            self.fields = fields
+        else:
+            self.fields = fields['fields']
 
     def add(self):
-        self._list.append(_Item(self.fields))
+        if _is_primitive_type(self.fields):
+            self._list.append(None)
+        else:
+            self._list.append(_Item(self.fields))
 
     def as_obj(self):
-        d = []
-        for item in self._list:
-            d.append(item.as_obj())
-        return d
+        if _is_primitive_type(self.fields):
+            return self._list
+        else:
+            d = []
+            for item in self._list:
+                d.append(item.as_obj())
+            return d
 
     def __setitem__(self, index, item):
         self._list[index] = item

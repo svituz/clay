@@ -32,7 +32,10 @@ class TestMessage(TestCase):
         self.complex_avro_message.name = "aaa"
         self.complex_avro_message.items.add()
         self.complex_avro_message.items[0].name = "bbb"
-        self.complex_avro_encoded = '\x02\x1c\x8e\xd1\x87\x01\x06aaa\x02\x06bbb\x00'
+        self.complex_avro_message.simple_items.add()
+        self.complex_avro_message.simple_items[0] = "ccc"
+
+        self.complex_avro_encoded = '\x02(\x8e\xd1\x87\x01\x06aaa\x02\x06bbb\x00\x02\x06ccc\x00'
 
     def tearDown(self):
         self._reset()
@@ -89,8 +92,23 @@ class TestMessage(TestCase):
         m.items[1].name = "ccc"
         self.assertEqual(m.items[1].name, "ccc")
 
+        m.simple_items.add()
+        self.assertEqual(len(m.simple_items), 1)
+        self.assertEqual(m.simple_items[0], None)
+        m.simple_items[0] = "ccc"
+        self.assertEqual(m.simple_items[0], "ccc")
+
+        m.simple_items.add()
+        self.assertEqual(len(m.simple_items), 2)
+        self.assertEqual(m.simple_items[1], None)
+        m.simple_items[1] = "ddd"
+        self.assertEqual(m.simple_items[1], "ddd")
+
         del m.items[1]
         self.assertEqual(len(m.items), 1)
+
+        del m.simple_items[1]
+        self.assertEqual(len(m.simple_items), 1)
 
     def test_avro_serializer(self):
         value = self.avro_message.serialize()
