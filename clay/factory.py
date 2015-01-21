@@ -5,13 +5,17 @@ from .message import Message
 
 
 class MessageFactory(object):
+    __metaclass__ = clay.MessageFactoryMetaclass
+
     def __init__(self, serializer, catalog):
         self.serializer = serializer
         self.catalog = catalog
         clay.add_catalog(self.catalog)
 
-    def create(self, message_type):
-        return Message(message_type, self.catalog, self.serializer)
+    def create(self, message_type, content=None):
+        msg = Message(message_type, self.catalog, self.serializer)
+        msg.set_content(content)
+        return msg
 
     def retrieve(self, message):
         def _fill_obj(obj, payload):

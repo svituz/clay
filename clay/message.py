@@ -121,6 +121,11 @@ class Message(object):
     def serialize(self):
         return self.serializer.serialize(self.struct.as_obj())
 
+    def set_content(self, content=None):
+        if content is not None:
+            for k, v in content.iteritems():
+                setattr(self.struct, k, v)
+
     def __setattr__(self, name, value):
         try:
             setattr(self.struct, name, value)

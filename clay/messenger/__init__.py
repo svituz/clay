@@ -20,5 +20,6 @@ class Dummy(Messenger):
 
 # Imports the other Messengers
 from .amqp import AMQPMessenger, AMQPBroker
+from .mqtt import MQTTMessenger, MQTTBroker
 
 # vim:tabstop=4:expandtab

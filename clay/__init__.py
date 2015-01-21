@@ -1,14 +1,24 @@
 from clay.exceptions import SchemaException
 
+MESSAGE_FACTORIES = {}
 CATALOGS = {}
 NAMED_CATALOGS = {}
+
+
+class MessageFactoryMetaclass(type):
+    def __call__(cls, serializer, catalog):
+        try:
+            _factory = MESSAGE_FACTORIES[(serializer, catalog['name'])]
+        except KeyError as ke:
+            _factory = type.__call__(cls, serializer, catalog)
+            MESSAGE_FACTORIES[(serializer, catalog['name'])] = _factory
+        return _factory
 
 
 def add_catalog(catalog):
     CATALOGS[catalog["name"]] = catalog
     NAMED_CATALOGS[catalog["name"]] = dict((v["name"], (k, v)) for (k, v) in catalog.viewitems()
                                            if isinstance(k, int))
-
 
 # def schema_from_name(schema_name):
 #     """
