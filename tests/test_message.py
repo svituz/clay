@@ -7,11 +7,10 @@ from multiprocessing import Process
 import pika
 from pika.exceptions import AMQPConnectionError
 
-import clay
-from clay.exceptions import InvalidMessage, SchemaException, AMQPError
+from clay.exceptions import InvalidMessage, SchemaException
 from clay.factory import MessageFactory
 from clay.serializer import AvroSerializer, AbstractHL7Serializer
-from clay.messenger import AMQPMessenger, AMQPReceiver
+from clay.messenger import AMQPMessenger, AMQPReceiver, AMQPError
 from clay.message import _Item
 
 from tests import TEST_CATALOG, TEST_SCHEMA, RABBIT_QUEUE, RABBIT_EXCHANGE

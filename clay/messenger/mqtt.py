@@ -1,4 +1,5 @@
 import Queue
+import socket
 import paho.mqtt.publish as MQTTPublisher
 import paho.mqtt.client as MQTTPClient
 
@@ -53,10 +54,10 @@ class MQTTMessenger(Messenger):
                 tls=None
             )
         except Exception as ex:
-            # self._message_queue.put(message)
-            # print "No connection, queuing"
-            # print "There are {0} messages in the queue".format(self._message_queue.qsize())
-            print ex
+            self._spooling_queue.put(message)
+            print "No connection, queuing"
+            print "There are {0} messages in the queue".format(self._spooling_queue.qsize())
+            # print ex
 
         return result
 
@@ -113,7 +114,11 @@ class MQTTReceiver(object):
             )
 
         self._client.on_message = self._handler_wrapper
-        self._client.connect(host=self._host, port=self._port)
+
+        try:
+            self._client.connect(host=self._host, port=self._port)
+        except socket.error as se:
+            raise MQTTError('MQTTReceiver: connection refused')
 
         self._client.subscribe(self._queue + '/#')
         self._client.loop_forever()
