@@ -11,7 +11,7 @@ import clay
 from clay.exceptions import InvalidMessage, SchemaException, AMQPError
 from clay.factory import MessageFactory
 from clay.serializer import AvroSerializer, AbstractHL7Serializer
-from clay.messenger import AMQPMessenger, AMQPBroker
+from clay.messenger import AMQPMessenger, AMQPReceiver
 from clay.message import _Item
 
 from tests import TEST_CATALOG, TEST_SCHEMA, RABBIT_QUEUE, RABBIT_EXCHANGE
@@ -122,7 +122,7 @@ class TestMessage(TestCase):
             self.assertEqual(message_body, self.avro_encoded)
             self.assertEqual(message_type, self.avro_message.message_type)
 
-        broker = AMQPBroker()
+        broker = AMQPReceiver()
         broker.exchange = RABBIT_EXCHANGE
         broker.set_queue(RABBIT_QUEUE, False, False)
         broker.handler = handler
@@ -149,7 +149,7 @@ class TestMessage(TestCase):
             self.assertEqual(message_type, self.avro_message.message_type)
             return 'OK'
 
-        broker = AMQPBroker()
+        broker = AMQPReceiver()
         broker.exchange = RABBIT_EXCHANGE
         broker.set_queue(RABBIT_QUEUE, False, True)
         broker.handler = handler
@@ -196,7 +196,7 @@ class TestMessage(TestCase):
             self.assertEqual(message_body, self.avro_encoded)
             self.assertEqual(message_type, self.avro_message.message_type)
 
-        broker = AMQPBroker('localhost', 20000)  # non existent rabbit server
+        broker = AMQPReceiver('localhost', 20000)  # non existent rabbit server
         broker.handler = handler
         broker.set_queue(RABBIT_QUEUE, False, True)
 

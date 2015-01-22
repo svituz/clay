@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from clay.factory import MessageFactory
-from clay.messenger import MQTTBroker
+from clay.messenger import MQTTReceiver
 from clay.serializer import AvroSerializer
 
 from example_catalog import SINGLE_EXAMPLE_CATALOG
@@ -14,7 +14,7 @@ def my_handler(body, message_type):
     except Exception as ex:
         print ex
 
-brk = MQTTBroker()
+brk = MQTTReceiver()
 brk.set_credentials('clay', 'clay')
 brk.set_queue('EXAMPLES', durable=True, response=False)
 brk.handler = my_handler

@@ -5,7 +5,11 @@ from pika.exceptions import AMQPConnectionError, ChannelClosed
 
 # Clay library imports
 from . import Messenger
-from clay.exceptions import AMQPError
+from ..exceptions import MessengerError
+
+
+class AMQPError(MessengerError):
+    pass
 
 
 class AMQPMessenger(Messenger):
@@ -108,7 +112,7 @@ class AMQPMessenger(Messenger):
         return result
 
 
-class AMQPBroker(object):
+class AMQPReceiver(object):
     """
     Class that implements an AMQP broker. The class creates a RabbitMQ *topic* exchange and start
     consuming on the queue specified in input. The broker consumes every message with matching the

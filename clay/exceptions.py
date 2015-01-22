@@ -10,7 +10,7 @@ class InvalidMessage(Exception):
         return "Message %s is not valid" % self.message_type
 
 
-class AMQPError(Exception):
+class MessengerError(Exception):
     pass
 
 # vim:tabstop=4:expandtab

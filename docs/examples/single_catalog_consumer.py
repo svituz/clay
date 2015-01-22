@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from clay.factory import MessageFactory
-from clay.messenger import AMQPBroker
+from clay.messenger import AMQPReceiver
 from clay.serializer import AvroSerializer
 
 from example_catalog import SINGLE_EXAMPLE_CATALOG
@@ -14,7 +14,7 @@ def my_handler(body, message_type):
     except Exception as ex:
         print ex
 
-brk = AMQPBroker()
+brk = AMQPReceiver()
 brk.exchange = 'EXAMPLES'
 brk.set_queue('EXAMPLES', durable=True, response=False)
 brk.handler = my_handler

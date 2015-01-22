@@ -19,7 +19,7 @@ class Dummy(Messenger):
         print("Dummy using messenger", serializer.serialize())
 
 # Imports the other Messengers
-from .amqp import AMQPMessenger, AMQPBroker
-from .mqtt import MQTTMessenger, MQTTBroker
+from .amqp import AMQPMessenger, AMQPReceiver
+from .mqtt import MQTTMessenger, MQTTReceiver
 
 # vim:tabstop=4:expandtab

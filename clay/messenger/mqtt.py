@@ -4,9 +4,10 @@ import paho.mqtt.client as MQTTPClient
 
 # Clay library imports
 from . import Messenger
+from ..exceptions import MessengerError
 
 
-class MQTTError(Exception):
+class MQTTError(MessengerError):
     pass
 
 
@@ -60,7 +61,7 @@ class MQTTMessenger(Messenger):
         return result
 
 
-class MQTTBroker(object):
+class MQTTReceiver(object):
     # """
     # Class that implements a MQTT broker. The class creates a RabbitMQ *topic* exchange and start
     # consuming on the queue specified in input. The broker consumes every message with matching the

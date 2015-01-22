@@ -113,31 +113,33 @@ class Message(object):
         except SchemaException:
             raise InvalidMessage(message_type)
 
-        self.message_type = message_type
-        self.domain = self.schema["namespace"]
-        self.serializer = serializer(message_type, catalog)
-        self.struct = _Item(self.schema["fields"])
+        self._message_type = message_type
+        self._domain = self.schema["namespace"]
+        self._serializer = serializer(message_type, catalog)
+        self._struct = _Item(self.schema["fields"])
+
+    domain = property(lambda self: self._domain)
+    message_type = property(lambda self: self._message_type)
+    fields = property(lambda self: self.struct.as_obj())
 
     def serialize(self):
-        return self.serializer.serialize(self.struct.as_obj())
+        return self._serializer.serialize(self._struct.as_obj())
 
     def set_content(self, content=None):
         if content is not None:
             for k, v in content.iteritems():
-                setattr(self.struct, k, v)
+                setattr(self._struct, k, v)
 
     def __setattr__(self, name, value):
         try:
-            setattr(self.struct, name, value)
+            setattr(self._struct, name, value)
         except AttributeError:
             super(Message, self).__setattr__(name, value)
 
     def __getattr__(self, name):
         try:
-            return getattr(self.struct, name)
+            return getattr(self._struct, name)
         except:
             raise AttributeError("%r object has no attribute %r" % (self.__class__.__name__, name))
-
-    fields = property(lambda self: self.struct.as_obj())
 
 # vim:tabstop=4:expandtab
