@@ -123,7 +123,7 @@ class Message(object):
 
     domain = property(lambda self: self._domain)
     message_type = property(lambda self: self._message_type)
-    fields = property(lambda self: self.struct.as_obj())
+    fields = property(lambda self: self._struct.as_obj())
 
     def serialize(self):
         return self._serializer.serialize(self._struct.as_obj())
