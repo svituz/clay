@@ -38,7 +38,10 @@ class _Item(object):
             if _is_primitive_type(field_type):
                 setattr(self, field["name"], field.get("default"))
             elif isinstance(field_type, MutableMapping):
-                setattr(self, field["name"], _Array(field_type["items"]))
+                if field_type["type"] == "array":
+                    setattr(self, field["name"], _Array(field_type["items"]))
+                else:
+                    setattr(self, field["name"], _Item(field_type["fields"]))
 
     def as_obj(self):
         d = {}
