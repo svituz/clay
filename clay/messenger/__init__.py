@@ -19,7 +19,8 @@ class Dummy(Messenger):
         print("Dummy using messenger", serializer.serialize())
 
 # Imports the other Messengers
-from .amqp import AMQPMessenger, AMQPReceiver, AMQPError
-from .mqtt import MQTTMessenger, MQTTReceiver, MQTTError
+from .amqp_messenger import AMQPMessenger, AMQPReceiver, AMQPError
+from .mqtt_messenger import MQTTMessenger, MQTTReceiver, MQTTError
+from .kafka_messenger import KafkaMessenger, KafkaError
 
 # vim:tabstop=4:expandtab

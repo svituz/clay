@@ -13,6 +13,17 @@ class AMQPError(MessengerError):
 
 
 class AMQPMessenger(Messenger):
+    """
+    This class implements a messenger specific for the AQMP protocol (at the moment, only the RabbitMQ broker is
+    supported).
+
+    :type host: `string`
+    :param host: the AMQP broker address (the RabbitMQ server host)
+
+    :type port: `int`
+    :param port: the RabbitMQ server port
+    """
+
     def __init__(self, host='localhost', port=5672):
         self.host = host
         self.port = port
@@ -35,6 +46,19 @@ class AMQPMessenger(Messenger):
     exchange = property(_get_exchange, _set_exchange, doc="The RabbitMQ Topic Exchange property")
 
     def set_credentials(self, username, password):
+        """
+        Set the credentials for the basic authentication (not SSL/TLS).
+
+        :type username: 'string'
+        :param username: the username to use for the authentication
+
+        :type password: 'string'
+        :param password: the password for the given username
+
+        .. note::
+            Credentials must be set using set_credentials() before the message is sent.
+
+        """
         self._credentials = pika.PlainCredentials(username, password)
 
     def add_queue(self, queue_name, durable, response):
