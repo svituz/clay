@@ -60,7 +60,7 @@ class _Item(object):
             except AttributeError:
                 pass
             else:
-                if isinstance(to_be_set, _Array):
+                if isinstance(to_be_set, _Array) or isinstance(to_be_set, _Item):
                     raise ValueError("Cannot assign field of complex type")
             super(_Item, self).__setattr__(key, value)
         else:
@@ -129,9 +129,24 @@ class Message(object):
         return self._serializer.serialize(self._struct.as_obj())
 
     def set_content(self, content=None):
+        def _fill_obj(obj, payload):
+            for k, v in payload.iteritems():
+                try:
+                    setattr(obj, k, v)
+                except ValueError:  # complex datatype
+                    attr = getattr(obj, k)
+                    if isinstance(attr, _Array):
+                        for index, item in enumerate(v):
+                            attr.add()
+                            if isinstance(item, MutableMapping):
+                                _fill_obj(attr[index], item)
+                            else:
+                                attr[index] = item
+                    elif isinstance(attr, _Item):
+                        _fill_obj(attr, v)
+
         if content is not None:
-            for k, v in content.iteritems():
-                setattr(self._struct, k, v)
+            _fill_obj(self._struct, content)
 
     def __setattr__(self, name, value):
         try:
