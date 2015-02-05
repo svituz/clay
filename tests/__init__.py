@@ -19,20 +19,24 @@ TEST_COMPLEX_SCHEMA = {
     "fields": [
         {"name": "id", "type": "int"},
         {"name": "name", "type": "string"},
-        {"name": "items",
+        {"name": "array_complex_field",
          "type": {
              "type": "array",
              "items": {
                  "type": "record",
                      "name": "items_type",
                      "fields": [
-                         {"name": "name", "type": "string"},
+                         {"name": "field_1", "type": "string"},
                      ]
                  }}},
-        {"name": "simple_items",
+        {"name": "array_simple_field",
          "type": {
              "type": "array",
-             "items": "string"}}
+             "items": "string"}},
+        {"name": "record_field", "type": {
+         "type": "record",
+         "name": "complex_record",
+         "fields": [{"name": "field_1", "type": "string"}]}}
     ]
 }
 

@@ -29,12 +29,13 @@ class TestMessage(TestCase):
         self.complex_avro_message = self.avro_factory.create('TEST_COMPLEX')
         self.complex_avro_message.id = 1111111
         self.complex_avro_message.name = "aaa"
-        self.complex_avro_message.items.add()
-        self.complex_avro_message.items[0].name = "bbb"
-        self.complex_avro_message.simple_items.add()
-        self.complex_avro_message.simple_items[0] = "ccc"
+        self.complex_avro_message.array_complex_field.add()
+        self.complex_avro_message.array_complex_field[0].field_1 = "bbb"
+        self.complex_avro_message.array_simple_field.add()
+        self.complex_avro_message.array_simple_field[0] = "ccc"
+        self.complex_avro_message.record_field.field_1 = "ddd"
 
-        self.complex_avro_encoded = '\x02(\x8e\xd1\x87\x01\x06aaa\x02\x06bbb\x00\x02\x06ccc\x00'
+        self.complex_avro_encoded = '\x020\x8e\xd1\x87\x01\x06aaa\x02\x06bbb\x00\x02\x06ccc\x00\x06ddd'
 
     def tearDown(self):
         self._reset()
@@ -57,7 +58,7 @@ class TestMessage(TestCase):
         self.assertRaises(InvalidMessage, self.avro_factory.create, "UNK")
         self.assertRaises(InvalidMessage, self.hl7_factory.create, "UNK")
 
-    def test_message_value_assignment(self, m=None):
+    def test_simple_message_value_assignment(self, m=None):
         if m is None:
             m = self.avro_factory.create("TEST")
         self.assertEqual(m.id, None)
@@ -77,37 +78,81 @@ class TestMessage(TestCase):
 
     def test_complex_message_value_assignment(self):
         m = self.avro_factory.create("TEST_COMPLEX")
-        self.test_message_value_assignment(m)
+        self.test_simple_message_value_assignment(m)
 
-        m.items.add()
-        self.assertEqual(len(m.items), 1)
-        self.assertIsInstance(m.items[0], _Item)
-        m.items[0].name = "bbb"
-        self.assertEqual(m.items[0].name, "bbb")
+        with self.assertRaises(ValueError):
+            m.array_complex_field = [{"field_1": "aaa"}]
 
-        m.items.add()
-        self.assertEqual(len(m.items), 2)
-        self.assertIsInstance(m.items[1], _Item)
-        m.items[1].name = "ccc"
-        self.assertEqual(m.items[1].name, "ccc")
+        with self.assertRaises(ValueError):
+            m.record_field = {"field_1": "aaa"}
 
-        m.simple_items.add()
-        self.assertEqual(len(m.simple_items), 1)
-        self.assertEqual(m.simple_items[0], None)
-        m.simple_items[0] = "ccc"
-        self.assertEqual(m.simple_items[0], "ccc")
+        m.array_complex_field.add()
+        self.assertEqual(len(m.array_complex_field), 1)
+        self.assertIsInstance(m.array_complex_field[0], _Item)
+        m.array_complex_field[0].field_1 = "bbb"
+        self.assertEqual(m.array_complex_field[0].field_1, "bbb")
 
-        m.simple_items.add()
-        self.assertEqual(len(m.simple_items), 2)
-        self.assertEqual(m.simple_items[1], None)
-        m.simple_items[1] = "ddd"
-        self.assertEqual(m.simple_items[1], "ddd")
+        m.array_complex_field.add()
+        self.assertEqual(len(m.array_complex_field), 2)
+        self.assertIsInstance(m.array_complex_field[1], _Item)
+        m.array_complex_field[1].field_1 = "ccc"
+        self.assertEqual(m.array_complex_field[1].field_1, "ccc")
 
-        del m.items[1]
-        self.assertEqual(len(m.items), 1)
+        m.array_simple_field.add()
+        self.assertEqual(len(m.array_simple_field), 1)
+        self.assertEqual(m.array_simple_field[0], None)
+        m.array_simple_field[0] = "ccc"
+        self.assertEqual(m.array_simple_field[0], "ccc")
 
-        del m.simple_items[1]
-        self.assertEqual(len(m.simple_items), 1)
+        m.array_simple_field.add()
+        self.assertEqual(len(m.array_simple_field), 2)
+        self.assertEqual(m.array_simple_field[1], None)
+        m.array_simple_field[1] = "ddd"
+        self.assertEqual(m.array_simple_field[1], "ddd")
+
+        del m.array_complex_field[1]
+        self.assertEqual(len(m.array_complex_field), 1)
+
+        del m.array_simple_field[1]
+        self.assertEqual(len(m.array_simple_field), 1)
+
+        m.record_field.field_1 = 'aaa'
+        self.assertEqual(m.record_field.field_1, 'aaa')
+
+    def test_set_content(self):
+        m = self.avro_factory.create("TEST_COMPLEX")
+
+        content = {
+            "id": 1111111,
+            "name": "aaa",
+            "array_complex_field": [{
+                "field_1": "bbb"
+            }],
+            "array_simple_field": ["ccc"],
+            "record_field": {
+                "field_1": "ddd"
+            }
+        }
+
+        m.set_content(content)
+
+        self.assertEqual(m.id, 1111111)
+        self.assertEqual(m.name, "aaa")
+        self.assertEqual(len(m.array_complex_field), 1)
+        self.assertEqual(m.array_complex_field[0].field_1, "bbb")
+        self.assertEqual(len(m.array_simple_field), 1)
+        self.assertEqual(m.array_simple_field[0], "ccc")
+        self.assertEqual(m.record_field.field_1, "ddd")
+
+    def test_retrieve(self):
+        m = self.avro_factory.retrieve('\x020\x8e\xd1\x87\x01\x06aaa\x02\x06bbb\x00\x02\x06ccc\x00\x06ddd')
+        self.assertEqual(m.id, 1111111)
+        self.assertEqual(m.name, "aaa")
+        self.assertEqual(len(m.array_complex_field), 1)
+        self.assertEqual(m.array_complex_field[0].field_1, "bbb")
+        self.assertEqual(len(m.array_simple_field), 1)
+        self.assertEqual(m.array_simple_field[0], "ccc")
+        self.assertEqual(m.record_field.field_1, "ddd")
 
     def test_avro_serializer(self):
         value = self.avro_message.serialize()
