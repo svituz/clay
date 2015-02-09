@@ -35,18 +35,16 @@ class KafkaMessenger(Messenger):
     def set_credentials(self, username, password):
         """
         .. warning::
-            Kafka doesn't support authentication. This function is provided for interface completeness. It just rises a
-            NotImplementedError exception!
+            Kafka doesn't support authentication. This function is provided for interface completeness. It just do
+            nothing!
 
         :type username: 'string'
         :param username: the username to use for the authentication
 
         :type password: 'string'
         :param password: the password for the given username
-
-        :raises: NotImplementedError
         """
-        raise NotImplementedError
+        pass
 
     def add_queue(self, queue_name, durable, response):
         self._queues[queue_name] = {'durable': durable, 'response': response}
