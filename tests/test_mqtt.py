@@ -23,10 +23,10 @@ class TestMessage(TestCase):
         self.complex_avro_message = self.avro_factory.create('TEST_COMPLEX')
         self.complex_avro_message.id = 1111111
         self.complex_avro_message.name = "aaa"
-        self.complex_avro_message.items.add()
-        self.complex_avro_message.items[0].name = "bbb"
-        self.complex_avro_message.simple_items.add()
-        self.complex_avro_message.simple_items[0] = "ccc"
+        self.complex_avro_message.array_complex_field.add()
+        self.complex_avro_message.array_complex_field[0].field_1 = "bbb"
+        self.complex_avro_message.array_simple_field.add()
+        self.complex_avro_message.array_simple_field[0] = "ccc"
 
         self.complex_avro_encoded = '\x02(\x8e\xd1\x87\x01\x06aaa\x02\x06bbb\x00\x02\x06ccc\x00'
 
