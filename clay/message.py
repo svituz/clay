@@ -53,6 +53,14 @@ class _Item(object):
                 d[attr] = value
         return d
 
+    def set_content(self, content):
+        for k, v in content.iteritems():
+            try:
+                setattr(self, k, v)
+            except ValueError:  # complex datatype
+                attr = getattr(self, k)
+                attr.set_content(v)
+
     def __setattr__(self, key, value):
         if key == '_attrs' or key in self._attrs:
             try:
@@ -78,11 +86,20 @@ class _Array(object):
         else:
             self.fields = fields['fields']
 
-    def add(self):
+    def add(self, content=None):
         if _is_primitive_type(self.fields):
-            self._list.append(None)
+            item = content
+            self._list.append(content)
         else:
-            self._list.append(_Item(self.fields))
+            item = _Item(self.fields)
+            if content:
+                item.set_content(content)
+            self._list.append(item)
+        return item
+
+    def set_content(self, content):
+        for item in content:
+            self.add(item)
 
     def as_obj(self):
         if _is_primitive_type(self.fields):
@@ -129,24 +146,8 @@ class Message(object):
         return self._serializer.serialize(self._struct.as_obj())
 
     def set_content(self, content=None):
-        def _fill_obj(obj, payload):
-            for k, v in payload.iteritems():
-                try:
-                    setattr(obj, k, v)
-                except ValueError:  # complex datatype
-                    attr = getattr(obj, k)
-                    if isinstance(attr, _Array):
-                        for index, item in enumerate(v):
-                            attr.add()
-                            if isinstance(item, MutableMapping):
-                                _fill_obj(attr[index], item)
-                            else:
-                                attr[index] = item
-                    elif isinstance(attr, _Item):
-                        _fill_obj(attr, v)
-
         if content is not None:
-            _fill_obj(self._struct, content)
+            self._struct.set_content(content)
 
     def __setattr__(self, name, value):
         try:

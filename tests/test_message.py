@@ -120,8 +120,6 @@ class TestMessage(TestCase):
         self.assertEqual(m.record_field.field_1, 'aaa')
 
     def test_set_content(self):
-        m = self.avro_factory.create("TEST_COMPLEX")
-
         content = {
             "id": 1111111,
             "name": "aaa",
@@ -134,6 +132,8 @@ class TestMessage(TestCase):
             }
         }
 
+        # test for the entire message
+        m = self.avro_factory.create("TEST_COMPLEX")
         m.set_content(content)
 
         self.assertEqual(m.id, 1111111)
@@ -143,6 +143,43 @@ class TestMessage(TestCase):
         self.assertEqual(len(m.array_simple_field), 1)
         self.assertEqual(m.array_simple_field[0], "ccc")
         self.assertEqual(m.record_field.field_1, "ddd")
+
+        # test for _Item and _Array classes
+        m = self.avro_factory.create("TEST_COMPLEX")
+
+        m.array_complex_field.set_content(content["array_complex_field"])
+        m.array_simple_field.set_content(content["array_simple_field"])
+        m.record_field.set_content(content["record_field"])
+
+        self.assertEqual(len(m.array_complex_field), 1)
+        self.assertEqual(m.array_complex_field[0].field_1, "bbb")
+        self.assertEqual(len(m.array_simple_field), 1)
+        self.assertEqual(m.array_simple_field[0], "ccc")
+        self.assertEqual(m.record_field.field_1, "ddd")
+
+    def test_set_content_wrong(self):
+        content = {
+            "wrong_id": 1111111,
+            "wrong_name": "aaa",
+            "wrong_array_complex_field": [{
+                "wrong_field_1": "bbb"
+            }],
+            "wrong_array_simple_field": ["ccc"],
+            "wrong_record_field": {
+                "wrong_field_1": "ddd"
+            }
+        }
+
+        # test for the entire message
+        m = self.avro_factory.create("TEST_COMPLEX")
+        self.assertRaises(AttributeError, m.set_content, (content,))
+
+        # test for _Item and _Array classes
+        self.assertRaises(AttributeError, m.array_complex_field.set_content,
+                          (content["wrong_array_complex_field"],))
+
+        self.assertRaises(AttributeError, m.record_field.set_content,
+                          (content["wrong_record_field"],))
 
     def test_retrieve(self):
         m = self.avro_factory.retrieve('\x020\x8e\xd1\x87\x01\x06aaa\x02\x06bbb\x00\x02\x06ccc\x00\x06ddd')
