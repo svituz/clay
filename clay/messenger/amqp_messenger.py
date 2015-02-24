@@ -1,7 +1,7 @@
 import Queue
 
 import pika
-from pika.exceptions import AMQPConnectionError, ChannelClosed
+from pika.exceptions import AMQPConnectionError as PikaAMQPConnectionError, ChannelClosed
 
 # Clay library imports
 from . import Messenger
@@ -10,6 +10,11 @@ from ..exceptions import MessengerError
 
 class AMQPError(MessengerError):
     pass
+
+
+class AMQPConnectionError(AMQPError):
+    def __str__(self):
+        return "Cannot connect to the AMQP Server"
 
 
 class AMQPMessenger(Messenger):
@@ -75,7 +80,7 @@ class AMQPMessenger(Messenger):
         result = None
 
         try:
-            self._queues[message.domain]
+            queue = self._queues[message.domain]
         except KeyError:
             raise AMQPError("No queue specified for this message")
 
@@ -128,10 +133,13 @@ class AMQPMessenger(Messenger):
                 )
 
             connection.close()
-        except (AMQPConnectionError, ChannelClosed) as amx:
-            self._message_queue.put(message)
-            print "No connection, queuing"
-            print "There are {0} messages in the queue".format(self._message_queue.qsize())
+        except (PikaAMQPConnectionError, ChannelClosed):
+            if queue['response'] is False:
+                self._message_queue.put(message)
+                print "No connection, queuing"
+                print "There are {0} messages in the queue".format(self._message_queue.qsize())
+            else:
+                raise AMQPConnectionError
 
         return result
 
@@ -160,14 +168,17 @@ class AMQPReceiver(object):
         self.handler = None
 
     def _set_exchange(self, exchange):
-        self._exchange = exchange
-        conn_param = pika.ConnectionParameters(host=self.host, port=self.port)
+        try:
+            self._exchange = exchange
+            conn_param = pika.ConnectionParameters(host=self.host, port=self.port)
 
-        connection = pika.BlockingConnection(conn_param)
-        channel = connection.channel()
+            connection = pika.BlockingConnection(conn_param)
+            channel = connection.channel()
 
-        channel.exchange_declare(self.exchange, type='topic', durable=True)
-        connection.close()
+            channel.exchange_declare(self.exchange, type='topic', durable=True)
+            connection.close()
+        except PikaAMQPConnectionError:
+            raise AMQPConnectionError
 
     def _get_exchange(self):
         return self._exchange
@@ -200,22 +211,35 @@ class AMQPReceiver(object):
 
     def run(self):
         conn_param = pika.ConnectionParameters(host=self.host, port=self.port)
-        self._connection = pika.BlockingConnection(conn_param)
-        self._channel = self._connection.channel()
+        if self.exchange is None:
+            raise AMQPError("You must set the AMQP exchange")
 
-        self._channel.queue_declare(
-            queue=self._queue['name'],
-            durable=self._queue['durable'])
+        if self._queue is None:
+            raise AMQPError("You must configure the queue")
 
-        self._channel.queue_bind(
-            exchange=self.exchange,
-            queue=self._queue['name'],
-            routing_key="{}.*".format(self._queue['name']))
+        if self.handler is None:
+            raise AMQPError("You must set the handler")
 
-        # channel.basic_qos(prefetch_count=1)
-        self._channel.basic_consume(self._handler_wrapper, queue=self._queue['name'], no_ack=True)
+        try:
+            self._connection = pika.BlockingConnection(conn_param)
 
-        self._channel.start_consuming()
+            self._channel = self._connection.channel()
+
+            self._channel.queue_declare(
+                queue=self._queue['name'],
+                durable=self._queue['durable'])
+
+            self._channel.queue_bind(
+                exchange=self.exchange,
+                queue=self._queue['name'],
+                routing_key="{}.*".format(self._queue['name']))
+
+            # channel.basic_qos(prefetch_count=1)
+            self._channel.basic_consume(self._handler_wrapper, queue=self._queue['name'], no_ack=True)
+
+            self._channel.start_consuming()
+        except PikaAMQPConnectionError:
+            raise AMQPConnectionError
 
     def stop(self):
         try:

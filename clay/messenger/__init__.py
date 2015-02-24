@@ -19,7 +19,7 @@ class Dummy(Messenger):
         print("Dummy using messenger", serializer.serialize())
 
 # Imports the other Messengers
-from .amqp_messenger import AMQPMessenger, AMQPReceiver, AMQPError
+from .amqp_messenger import AMQPMessenger, AMQPReceiver, AMQPError, AMQPConnectionError
 from .mqtt_messenger import MQTTMessenger, MQTTReceiver, MQTTError
 from .kafka_messenger import KafkaMessenger, KafkaError
 

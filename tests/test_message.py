@@ -5,12 +5,11 @@ import time
 from multiprocessing import Process
 
 import pika
-from pika.exceptions import AMQPConnectionError
 
 from clay.exceptions import InvalidMessage, SchemaException
 from clay.factory import MessageFactory
 from clay.serializer import AvroSerializer, AbstractHL7Serializer
-from clay.messenger import AMQPMessenger, AMQPReceiver, AMQPError
+from clay.messenger import AMQPMessenger, AMQPReceiver, AMQPError, AMQPConnectionError
 from clay.message import _Item
 
 from tests import TEST_CATALOG, TEST_SCHEMA, RABBIT_QUEUE, RABBIT_EXCHANGE
@@ -271,6 +270,14 @@ class TestMessage(TestCase):
         result = messenger.send(self.avro_message)
         self.assertIsNone(result)
         self.assertEqual(messenger._message_queue.qsize(), 1)
+
+    def test_amqp_receiver_errors(self):
+        broker = AMQPReceiver()
+        self.assertRaisesRegexp(AMQPError, "You must set the AMQP exchange", broker.run)
+        broker.exchange = RABBIT_EXCHANGE
+        self.assertRaisesRegexp(AMQPError, "You must configure the queue", broker.run)
+        broker.set_queue(RABBIT_QUEUE, False, False)
+        self.assertRaisesRegexp(AMQPError, "You must set the handler", broker.run)
 
     def test_amqp_broker_server_down(self):
         def handler(message_body, message_type):
