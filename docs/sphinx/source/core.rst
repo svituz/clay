@@ -2,14 +2,18 @@ Core classes
 ============
 
 .. automodule:: clay.factory
+
+.. autoclass:: MessageFactory
    :members:
 
-.. .. autoclass:: MessageFactory
-..    :members:
-
 .. automodule:: clay.message
+
+.. autoclass:: Message
    :members:
 
 .. automodule:: clay.exceptions
-   :members:
+
+.. autoclass:: SchemaException
+.. autoclass:: InvalidMessage
+.. autoclass:: MessengerError
 

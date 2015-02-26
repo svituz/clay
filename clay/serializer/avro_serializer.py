@@ -21,6 +21,9 @@ ENVELOPE_SCHEMA = {
 
 
 class AvroSerializer(Serializer):
+    """
+    Class to serialize and deserialize messages using Avro
+    """
 
     def __init__(self, message_type, schema_catalog):
         schema_id, schema = schema_from_name(message_type, schema_catalog)

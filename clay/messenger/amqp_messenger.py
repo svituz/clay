@@ -1,7 +1,7 @@
 import Queue
 
 import pika
-from pika.exceptions import AMQPConnectionError as PikaAMQPConnectionError, ChannelClosed
+from pika.exceptions import AMQPConnectionError, ChannelClosed
 
 # Clay library imports
 from . import Messenger
@@ -9,12 +9,10 @@ from ..exceptions import MessengerError
 
 
 class AMQPError(MessengerError):
+    """
+    Exceptions raised when an AMQP error occurs
+    """
     pass
-
-
-class AMQPConnectionError(AMQPError):
-    def __str__(self):
-        return "Cannot connect to the AMQP Server"
 
 
 class AMQPMessenger(Messenger):
@@ -22,7 +20,7 @@ class AMQPMessenger(Messenger):
     This class implements a messenger specific for the AQMP protocol (at the moment, only the RabbitMQ broker is
     supported).
 
-    :type host: `string`
+    :type host: `str`
     :param host: the AMQP broker address (the RabbitMQ server host)
 
     :type port: `int`
@@ -54,23 +52,54 @@ class AMQPMessenger(Messenger):
         """
         Set the credentials for the basic authentication (not SSL/TLS).
 
-        :type username: 'string'
+        :type username: `str`
         :param username: the username to use for the authentication
 
-        :type password: 'string'
+        :type password: `str`
         :param password: the password for the given username
 
         .. note::
-            Credentials must be set using set_credentials() before the message is sent.
+            Credentials must be set using :meth:`set_credentials()` before the message is sent.
 
         """
         self._credentials = pika.PlainCredentials(username, password)
 
-    def add_queue(self, queue_name, durable, response):
-        self._queues[queue_name] = {'durable': durable, 'response': response}
+    def add_queue(self, name, durable, response):
+        """
+        Add a queue to the messenger. This operation is necessary to send messages of a particualar domain.
+        For example, if you have a message belonging to TEST domain, you'll need to add the "TEST" queue to the
+        messenger.
+        If the queue was already present, it will overvrite it
+
+        :type name: `str`
+        :param name: the name of the queue: it has to be equal to the domain of messages to be sent to the queue
+
+        :type durable: `boolean`
+        :param durable: Flag to configure the queue as durable (i.e., if the AMQP server is restarted the queue will
+            still exist)
+
+        :type response: `boolean`
+        :param response: Flag that specifies if messages sent to the queue should expect a response or not
+        """
+        self._queues[name] = {'durable': durable, 'response': response}
         return True
 
     def send(self, message):
+        """
+        Serializes and sends a message to the appropriate AMQP queue. The message is sent to the queue with the name
+        corresponding to the :attr:`message.domain`.
+        If sending fails because of connection problem, if the queue 'response' is :const:`False`, the message is stored
+        to be sent again, if the queue 'response' is :const:`True`, an
+        :exc:`AMQPError <clay.messenger.AMQPError>`
+
+        :type message: :class:`Message <clay.message.Message>`
+        :param message: the message to serialize and send
+
+        :returns: :class:`Message <clay.message.Message>` if the queue 'response' is :const:`True`, :const:`None` if it
+           is :const:`False`
+
+        :raises: :exc:`AMQPError <clay.messenger.AMQPError>`
+        """
         return self._send(message)
 
     def _synchronous_callback(self, channel, method, properties, body):
@@ -133,13 +162,13 @@ class AMQPMessenger(Messenger):
                 )
 
             connection.close()
-        except (PikaAMQPConnectionError, ChannelClosed):
+        except (AMQPConnectionError, ChannelClosed):
             if queue['response'] is False:
                 self._message_queue.put(message)
                 print "No connection, queuing"
                 print "There are {0} messages in the queue".format(self._message_queue.qsize())
             else:
-                raise AMQPConnectionError
+                raise AMQPError("Cannot connect to AMQP server")
 
         return result
 
@@ -150,7 +179,7 @@ class AMQPReceiver(object):
     consuming on the queue specified in input. The broker consumes every message with matching the
     routing key <queue>.*
 
-    :type host: `string`
+    :type host: `str`
     :param host: the RabbitMQ server address
 
     :type port: `int`
@@ -177,8 +206,8 @@ class AMQPReceiver(object):
 
             channel.exchange_declare(self.exchange, type='topic', durable=True)
             connection.close()
-        except PikaAMQPConnectionError:
-            raise AMQPConnectionError
+        except AMQPConnectionError:
+            raise AMQPError
 
     def _get_exchange(self):
         return self._exchange
@@ -187,17 +216,17 @@ class AMQPReceiver(object):
 
     def set_queue(self, queue_name, durable, response):
         """
-        Set the queue whose messages the broker will consume. If response is `True` the counterpart
+        Set the queue whose messages the broker will consume. If response is :const:`True` the counterpart
         consumer will receive the return value of the handler
 
-        :type queue_name: `string`
+        :type queue_name: `str`
         :param queue_name: The name of the queue
         :type durable: `boolean`
         :param durable: It specifies if the queue should be durable or not
 
         :type response: `boolean`
-        :param response: If it's True then the Broker will return to the consumer the result of the
-                         handler function
+        :param response: If it's :const:`True` then the Broker will return to the consumer the result of the
+            handler function
 
         """
         self._queue = {'name': queue_name, 'durable': durable, 'response': response}
@@ -238,8 +267,8 @@ class AMQPReceiver(object):
             self._channel.basic_consume(self._handler_wrapper, queue=self._queue['name'], no_ack=True)
 
             self._channel.start_consuming()
-        except PikaAMQPConnectionError:
-            raise AMQPConnectionError
+        except AMQPConnectionError:
+            raise AMQPError("Cannot connect to AMQP server")
 
     def stop(self):
         try:

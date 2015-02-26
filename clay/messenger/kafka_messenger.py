@@ -16,7 +16,7 @@ class KafkaMessenger(Messenger):
     """
     This class implements a messenger specific for the Kafka broker.
 
-    :type host: `string`
+    :type host: `str`
     :param host: the Kafka broker address
 
     :type port: `int`
@@ -35,13 +35,13 @@ class KafkaMessenger(Messenger):
     def set_credentials(self, username, password):
         """
         .. warning::
-            Kafka doesn't support authentication. This function is provided for interface completeness. It just do
+            Kafka doesn't support authentication. This function is provided for interface completeness. It just does
             nothing!
 
-        :type username: 'string'
+        :type username: `str`
         :param username: the username to use for the authentication
 
-        :type password: 'string'
+        :type password: `str`
         :param password: the password for the given username
         """
         pass
@@ -54,9 +54,9 @@ class KafkaMessenger(Messenger):
         """
         Send the message.
 
-        :type message: Message
-        :param message: the message to send. It must be an object of the clay.Message class or a subclass that
-            implements the serialize() method.
+        :type message: :class:`Message <clay.message.Message>`
+        :param message: the message to send. It must be an object of the :class:`Message <clay.message.Message>` class
+           or a subclass that implements the :meth:`serialize <clay.message.Message.serialize>` method.
         """
         return self._send(message)
 

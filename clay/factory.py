@@ -1,5 +1,3 @@
-from collections import MutableMapping
-
 import clay
 from .message import Message
 
@@ -9,8 +7,11 @@ class MessageFactory(object):
     Create a factory for the messages of the types included in the given catalog and that should be serialized with
     the given serializer class.
 
-    :param serializer: the serializer class
-    :param catalog: the catalog of the schemas to use for the message creation and serialization/deserialization
+    :type serializer: `class`
+    :param serializer: the :class:`Serializer <clay.serializer.Serializer>` class
+
+    :type catalog: `dict`
+    :param catalog: the catalog with the schemas to use for the message creation and serialization/deserialization
     """
     __metaclass__ = clay.MessageFactoryMetaclass
 
@@ -28,10 +29,12 @@ class MessageFactory(object):
         :param message_type: the type of the message to be created.
          It must be the name of one of the schemas included in the factory catalog,
          otherwise an InvalidSchema Exception is raised.
-        :type message_type: basestring
+        :type message_type: `str`
+
         :param content: if present, the message is populated with the content provided.
-        :type content: dict
-        :return: a Message instance
+        :type content: `dict`
+
+        :return: a :class:`Message <clay.message.Message>` instance
 
         >>> mf = MessageFactory(AvroSerializer, SINGLE_EXAMPLE_CATALOG)
         >>> m = mf.create("DEPOSIT")
@@ -46,10 +49,11 @@ class MessageFactory(object):
 
     def retrieve(self, message):
         """
-        Retrieve the content from the serialized message and return a populated instance of the Message class.
+        Retrieve the content from the serialized message and return a populated instance of the
+        :class:`Message <clay.message.Message>` class.
 
         :param message: the serialized message to deserialize and retrieve
-        :return: a populated instance of the Message class
+        :return: a populated instance of the :class:`Message <clay.message.Message>` class
 
         >>> mf = MessageFactory(AvroSerializer, TEST_CATALOG)
         >>> m = mf.retrieve('\\x00\\x10\\x8e\\xd1\\x87\\x01\\x06aaa')

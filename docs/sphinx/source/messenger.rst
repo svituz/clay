@@ -8,6 +8,10 @@ Messenger classes
 AMQP Protocol (RabbitMQ broker)
 -------------------------------
 
+AMQPError
++++++++++
+.. autoclass::  AMQPError
+
 AMQPMessenger
 +++++++++++++
 .. autoclass::  AMQPMessenger
@@ -16,11 +20,6 @@ AMQPMessenger
 AMQPReceiver
 ++++++++++++
 .. autoclass::  AMQPReceiver
-   :members:
-
-AMQPError
-+++++++++
-.. autoclass::  AMQPError
    :members:
 
 Kafka Protocol/Broker

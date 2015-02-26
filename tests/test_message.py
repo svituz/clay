@@ -9,7 +9,7 @@ import pika
 from clay.exceptions import InvalidMessage, SchemaException
 from clay.factory import MessageFactory
 from clay.serializer import AvroSerializer, AbstractHL7Serializer
-from clay.messenger import AMQPMessenger, AMQPReceiver, AMQPError, AMQPConnectionError
+from clay.messenger import AMQPMessenger, AMQPReceiver, AMQPError
 from clay.message import _Item
 
 from tests import TEST_CATALOG, TEST_SCHEMA, RABBIT_QUEUE, RABBIT_EXCHANGE
@@ -288,10 +288,12 @@ class TestMessage(TestCase):
         broker.handler = handler
         broker.set_queue(RABBIT_QUEUE, False, True)
 
-        with self.assertRaises(AMQPConnectionError):
+        with self.assertRaises(AMQPError) as e:
             broker.exchange = RABBIT_EXCHANGE
-        with self.assertRaises(AMQPConnectionError):
+            self.assertEqual(e.expected, "Cannot connect to AMQP server")
+        with self.assertRaises(AMQPError) as e:
             broker.run()
+            self.assertEqual(e.expected, "Cannot connect to AMQP server")
 
 if __name__ == '__main__':
     unittest.main()
