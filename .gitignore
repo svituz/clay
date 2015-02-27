@@ -2,3 +2,4 @@ syntax: glob
 
 *.pyc
 .idea
+docs/sphinx/build
