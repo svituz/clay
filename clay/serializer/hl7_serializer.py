@@ -39,7 +39,7 @@ class AbstractHL7Serializer(Serializer):
     SERIALIZERS = {}
 
     def __init__(self, message_type, schema_catalog):
-        super(AbstractHL7Serializer, self).__init__(message_type)
+        super(AbstractHL7Serializer, self).__init__(message_type, schema_catalog)
         if self.__class__ == "AbstractHL7Serializer":
             raise Exception("Cannot instantiate AbstractHL7Serializer directly. It is meant to be \
                             extended with the serializers dictionary")
