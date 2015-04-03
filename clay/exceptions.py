@@ -19,6 +19,7 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+
 class SchemaException(Exception):
     pass
 
@@ -32,6 +33,11 @@ class InvalidMessage(Exception):
 
     def __str__(self):
         return "Message %s is not valid" % self.message_type
+
+
+class InvalidContent(Exception):
+    def __str__(self):
+        return "Content not valid"
 
 
 class MessengerError(Exception):

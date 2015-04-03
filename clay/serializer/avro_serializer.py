@@ -31,11 +31,11 @@ from .. import schema_from_name
 from ..exceptions import SchemaException
 
 ENVELOPE_SCHEMA = {
-    "namespace": "TRACEABILITY",
+    "namespace": "CLAY",
     "name": "ENVELOPE",
     "type": "record",
     "fields": [
-        {"name": "id",      "type": "int"},
+        {"name": "id", "type": "int"},
         {"name": "payload", "type": "bytes"}
     ]
 }

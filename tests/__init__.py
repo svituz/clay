@@ -41,7 +41,7 @@ TEST_COMPLEX_SCHEMA = {
         {"name": "id", "type": "int"},
         {"name": "name", "type": "string"},
         {"name": "array_complex_field",
-         "type": {
+         "type": [{
              "type": "array",
              "items": {
                  "type": "record",
@@ -49,15 +49,36 @@ TEST_COMPLEX_SCHEMA = {
                      "fields": [
                          {"name": "field_1", "type": "string"},
                      ]
-                 }}},
+                 }}, "null"]},
         {"name": "array_simple_field",
-         "type": {
+         "type": [{
              "type": "array",
-             "items": "string"}},
-        {"name": "record_field", "type": {
-         "type": "record",
-         "name": "complex_record",
-         "fields": [{"name": "field_1", "type": "string"}]}}
+             "items": "string"}, "null"]},
+        {"name": "record_field", "type": [{
+            "type": "record",
+            "name": "complex_record",
+            "fields": [
+                 {"name": "field_1", "type": "string"},
+                 {"name": "field_2", "type": ["string", "null"]}
+             ]},
+         "null"]}
+    ]
+}
+
+TEST_COMPLEX_SCHEMA_WITH_NULL = {
+    "namespace": RABBIT_QUEUE,
+    "name": "TEST_COMPLEX_WITH_NULL",
+    "type": "record",
+    "fields": [
+        {"name": "arr", "type": [{
+            "type": "array",
+            "items": "string"
+        }, "null"]},
+        {"name": "rec", "type": [{
+            "type": "record",
+            "name": "REC",
+            "fields": [{"name": "field", "type": "string"}]
+        }, "null"]}
     ]
 }
 
@@ -76,5 +97,6 @@ TEST_CATALOG = {
     "name": "TEST_CATALOG",
     0: TEST_SCHEMA,
     1: TEST_COMPLEX_SCHEMA,
-    2: TEST_WRONG_SCHEMA
+    2: TEST_WRONG_SCHEMA,
+    3: TEST_COMPLEX_SCHEMA_WITH_NULL
 }

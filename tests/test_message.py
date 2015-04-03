@@ -27,11 +27,11 @@ from multiprocessing import Process
 
 import pika
 
-from clay.exceptions import InvalidMessage, SchemaException
+from clay.exceptions import InvalidMessage, SchemaException, InvalidContent
 from clay.factory import MessageFactory
 from clay.serializer import AvroSerializer, AbstractHL7Serializer
 from clay.messenger import AMQPMessenger, AMQPReceiver, AMQPError
-from clay.message import _Item
+from clay.message import _Record
 
 from tests import TEST_CATALOG, TEST_SCHEMA, RABBIT_QUEUE, RABBIT_EXCHANGE
 
@@ -54,8 +54,10 @@ class TestMessage(TestCase):
         self.complex_avro_message.array_simple_field.add()
         self.complex_avro_message.array_simple_field[0] = "ccc"
         self.complex_avro_message.record_field.field_1 = "ddd"
+        self.complex_avro_message.record_field.field_2 = "eee"
 
-        self.complex_avro_encoded = '\x020\x8e\xd1\x87\x01\x06aaa\x02\x06bbb\x00\x02\x06ccc\x00\x06ddd'
+        self.complex_avro_encoded = '\x02@\x8e\xd1\x87\x01\x06aaa\x00\x02\x06bbb' \
+                                    '\x00\x00\x02\x06ccc\x00\x00\x06ddd\x00\x06eee'
 
     def tearDown(self):
         self._reset()
@@ -67,7 +69,6 @@ class TestMessage(TestCase):
         channel.exchange_delete(RABBIT_EXCHANGE)
         channel.queue_delete(RABBIT_QUEUE)
         connection.close()
-        pass
 
     def test_message_instantiation(self):
         test_message = self.avro_factory.create("TEST")
@@ -108,13 +109,13 @@ class TestMessage(TestCase):
 
         m.array_complex_field.add()
         self.assertEqual(len(m.array_complex_field), 1)
-        self.assertIsInstance(m.array_complex_field[0], _Item)
+        self.assertIsInstance(m.array_complex_field[0], _Record)
         m.array_complex_field[0].field_1 = "bbb"
         self.assertEqual(m.array_complex_field[0].field_1, "bbb")
 
         m.array_complex_field.add()
         self.assertEqual(len(m.array_complex_field), 2)
-        self.assertIsInstance(m.array_complex_field[1], _Item)
+        self.assertIsInstance(m.array_complex_field[1], _Record)
         m.array_complex_field[1].field_1 = "ccc"
         self.assertEqual(m.array_complex_field[1].field_1, "ccc")
 
@@ -139,7 +140,7 @@ class TestMessage(TestCase):
         m.record_field.field_1 = 'aaa'
         self.assertEqual(m.record_field.field_1, 'aaa')
 
-    def test_set_content(self):
+    def test_set_content_message(self):
         content = {
             "id": 1111111,
             "name": "aaa",
@@ -164,20 +165,7 @@ class TestMessage(TestCase):
         self.assertEqual(m.array_simple_field[0], "ccc")
         self.assertEqual(m.record_field.field_1, "ddd")
 
-        # test for _Item and _Array classes
-        m = self.avro_factory.create("TEST_COMPLEX")
-
-        m.array_complex_field.set_content(content["array_complex_field"])
-        m.array_simple_field.set_content(content["array_simple_field"])
-        m.record_field.set_content(content["record_field"])
-
-        self.assertEqual(len(m.array_complex_field), 1)
-        self.assertEqual(m.array_complex_field[0].field_1, "bbb")
-        self.assertEqual(len(m.array_simple_field), 1)
-        self.assertEqual(m.array_simple_field[0], "ccc")
-        self.assertEqual(m.record_field.field_1, "ddd")
-
-    def test_set_content_wrong(self):
+    def test_set_content_message_wrong(self):
         content = {
             "wrong_id": 1111111,
             "wrong_name": "aaa",
@@ -192,17 +180,80 @@ class TestMessage(TestCase):
 
         # test for the entire message
         m = self.avro_factory.create("TEST_COMPLEX")
-        self.assertRaises(AttributeError, m.set_content, (content,))
+        self.assertRaises(AttributeError, m.set_content, content)
 
-        # test for _Item and _Array classes
+        # test for _Record and _Array classes
         self.assertRaises(AttributeError, m.array_complex_field.set_content,
-                          (content["wrong_array_complex_field"],))
+                          content["wrong_array_complex_field"])
 
         self.assertRaises(AttributeError, m.record_field.set_content,
-                          (content["wrong_record_field"],))
+                          content["wrong_record_field"])
+
+    def test_set_content_array(self):
+        content = [{
+            "field_1": "bbb"
+        }]
+
+        m = self.avro_factory.create("TEST_COMPLEX")
+
+        self.assertRaises(InvalidContent, m.array_complex_field.set_content, 1)  # 1 is not iterable
+        m.array_complex_field.set_content(None)
+        self.assertEqual(m.array_complex_field.as_obj(), None)
+        # self.assertRaises(ValueError, m.array_complex_field.add, "value")
+        self.assertRaises(TypeError, m.array_complex_field.__getitem__, 0)
+        self.assertRaises(TypeError, m.array_complex_field.__delitem__, 0)
+        self.assertRaises(TypeError, m.array_complex_field.__setitem__, 0, "value")
+        self.assertRaises(TypeError, len, m.array_complex_field)
+
+        m.array_complex_field.set_content([])
+        self.assertEqual(m.array_complex_field.as_obj(), [])
+        m.array_complex_field.set_content(content)
+        self.assertEqual(m.array_complex_field.as_obj(), [{"field_1": "bbb"}])
+
+    def test_set_content_array_wrong(self):
+        content = [{
+            "wrong_field_1": "bbb"
+        }]
+
+        m = self.avro_factory.create("TEST_COMPLEX")
+        self.assertRaises(AttributeError, m.array_complex_field.set_content, content)
+
+    def test_set_content_record(self):
+        content = {
+            "field_1": "ddd",
+            "field_2": "eee"
+        }
+
+        m = self.avro_factory.create("TEST_COMPLEX")
+
+        self.assertIsNone(m.record_field.as_obj())
+        self.assertRaises(AttributeError, getattr, m.record_field, "field_1")
+        self.assertRaises(AttributeError, getattr, m.record_field, "field_2")
+        m.record_field.field_1 = 'ddd'
+        self.assertEqual(m.record_field.field_1, "ddd")
+        self.assertIsNone(m.record_field.field_2)
+
+        m.record_field.set_content(None)
+        self.assertIsNone(m.record_field.as_obj())
+        self.assertRaises(AttributeError, getattr, m.record_field, "field_1")
+        self.assertRaises(AttributeError, getattr, m.record_field, "field_2")
+
+        m.record_field.set_content(content)
+        self.assertEqual(m.record_field.field_1, "ddd")
+        self.assertEqual(m.record_field.field_2, "eee")
+
+    def test_set_content_record_wrong(self):
+        content = {
+            "wrong_field_1": "ddd"
+        }
+
+        m = self.avro_factory.create("TEST_COMPLEX")
+
+        self.assertRaises(AttributeError, m.record_field.set_content, content)
 
     def test_retrieve(self):
-        m = self.avro_factory.retrieve('\x020\x8e\xd1\x87\x01\x06aaa\x02\x06bbb\x00\x02\x06ccc\x00\x06ddd')
+        m = self.avro_factory.retrieve('\x02@\x8e\xd1\x87\x01\x06aaa\x00\x02\x06bbb'
+                                       '\x00\x00\x02\x06ccc\x00\x00\x06ddd\x00\x06eee')
         self.assertEqual(m.id, 1111111)
         self.assertEqual(m.name, "aaa")
         self.assertEqual(len(m.array_complex_field), 1)
@@ -210,6 +261,7 @@ class TestMessage(TestCase):
         self.assertEqual(len(m.array_simple_field), 1)
         self.assertEqual(m.array_simple_field[0], "ccc")
         self.assertEqual(m.record_field.field_1, "ddd")
+        self.assertEqual(m.record_field.field_2, "eee")
 
     def test_avro_serializer(self):
         value = self.avro_message.serialize()

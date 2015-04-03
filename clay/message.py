@@ -19,10 +19,10 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from collections import MutableMapping
+from collections import MutableMapping, Iterable
 
 from . import schema_from_name
-from .exceptions import SchemaException, InvalidMessage
+from .exceptions import SchemaException, InvalidMessage, InvalidContent
 from .serializer import DummySerializer
 
 
@@ -38,13 +38,22 @@ def _is_primitive_type(t):
         return t in primitive_types
 
 
-class _Item(object):
-    def __init__(self, fields):
-        self._attrs = []
+class _Record(object):
+    def __init__(self, schema, init=False):
+        self._schema = schema
+        self._fields_name = [field["name"] for field in self.schema]
+        if init:
+            self._init_fields()
+        else:
+            self._content = None
 
-        # add field names to _attrs list
-        for field in fields:
-            self._attrs.append(field["name"])
+    schema = property(lambda self: self._schema)
+
+    def _init_fields(self):
+        # Method to reinitialize the fields. It is used on the first initialization and when the _Record was set to None
+        self._content = {}
+        for field in self.schema:
+            # self._fields_name.append(field["name"])
             if isinstance(field["type"], list):
                 # We allow only two kind of types
                 # FIXME: we are taking that the list contains only two types
@@ -52,7 +61,7 @@ class _Item(object):
                     raise SchemaException("The schema structure is not valid: found more than one \
                                           field type")
                 else:
-                    field_type = [t for t in field["type"] if t != "null"][0]
+                    field_type = [t for t in field["type"] if t != "null"][0]  # the field type other than "null"
             else:
                 field_type = field["type"]
 
@@ -62,11 +71,16 @@ class _Item(object):
                 if field_type["type"] == "array":
                     setattr(self, field["name"], _Array(field_type["items"]))
                 else:
-                    setattr(self, field["name"], _Item(field_type["fields"]))
+                    setattr(self, field["name"], _Record(field_type["fields"]))
+
+    def _is_none(self):
+        return self._content is None
 
     def as_obj(self):
+        if self._is_none():
+            return None
         d = {}
-        for attr in self._attrs:
+        for attr in self._fields_name:
             value = getattr(self, attr)
             try:
                 d[attr] = value.as_obj()
@@ -75,23 +89,48 @@ class _Item(object):
         return d
 
     def set_content(self, content):
-        for k, v in content.iteritems():
-            try:
-                setattr(self, k, v)
-            except ValueError:  # complex datatype
-                attr = getattr(self, k)
-                attr.set_content(v)
+        if content is not None and not isinstance(content, MutableMapping):
+            raise InvalidContent()
+
+        if content is None:
+            self._content = None
+        else:
+            if self._is_none():
+                self._init_fields()
+            for k, v in content.iteritems():
+                try:
+                    setattr(self, k, v)
+                except ValueError:  # complex datatype
+                    attr = getattr(self, k)
+                    attr.set_content(v)
+
+    def __getattr__(self, item):
+        if item not in self._fields_name:
+            raise AttributeError("%r object has no attribute %r" % (self.__class__.__name__, item))
+
+        if self._is_none():
+            raise AttributeError("Cannot access to fields in a None record")
+
+        try:
+            return self._content[item]
+        except KeyError:
+            raise AttributeError
 
     def __setattr__(self, key, value):
-        if key == '_attrs' or key in self._attrs:
+        if key in ('_fields_name', '_schema', '_content'):
+            super(_Record, self).__setattr__(key, value)
+        elif key in self._fields_name:
+            if self._is_none():
+                self._init_fields()
             try:
                 to_be_set = getattr(self, key)
             except AttributeError:
                 pass
             else:
-                if isinstance(to_be_set, _Array) or isinstance(to_be_set, _Item):
+                if isinstance(to_be_set, _Array) or isinstance(to_be_set, _Record):
                     raise ValueError("Cannot assign field of complex type")
-            super(_Item, self).__setattr__(key, value)
+            # super(_Record, self).__setattr__(key, value)
+            self._content[key] = value
         else:
             raise AttributeError("%r object has no attribute %r" % (self.__class__.__name__, key))
 
@@ -101,50 +140,62 @@ class _Item(object):
 
 class _Array(object):
     def __init__(self, fields):
-        self._list = []
+        self._content = None
         if _is_primitive_type(fields):
-            self.fields = fields
+            self.fields_schema = fields
         else:
-            self.fields = fields['fields']
+            self.fields_schema = fields['fields']
+
+    def _is_none(self):
+        return self._content is None
 
     def add(self, content=None):
-        if _is_primitive_type(self.fields):
+        if self._is_none():
+            self._content = []
+            # raise ValueError("Cannot add an item to a None array")
+        if _is_primitive_type(self.fields_schema):
             item = content
-            self._list.append(content)
+            self._content.append(content)
         else:
-            item = _Item(self.fields)
+            item = _Record(self.fields_schema)
             if content:
                 item.set_content(content)
-            self._list.append(item)
+            self._content.append(item)
         return item
 
     def set_content(self, content):
-        for item in content:
-            self.add(item)
+        if content is not None and not isinstance(content, Iterable):
+            raise InvalidContent()
+        if content is None:
+            self._content = None
+        else:
+            self._content = []
+            for item in content:
+                self.add(item)
 
     def as_obj(self):
-        if _is_primitive_type(self.fields):
-            return self._list
+        if self._is_none() or _is_primitive_type(self.fields_schema):
+            return self._content
         else:
             d = []
-            for item in self._list:
+            for item in self._content:
                 d.append(item.as_obj())
             return d
 
     def __setitem__(self, index, item):
-        self._list[index] = item
+        self._content[index] = item
 
     def __getitem__(self, index):
-        return self._list[index]
+        return self._content[index]
 
     def __delitem__(self, index):
-        del self._list[index]
+        del self._content[index]
 
     def __len__(self):
-        return len(self._list)
+        return len(self._content)
 
     def __repr__(self):
-        return repr(self._list)
+        return repr(self._content)
 
 
 class Message(object):
@@ -220,7 +271,7 @@ class Message(object):
         self._message_type = message_type
         self._domain = self.schema["namespace"]
         self._serializer = serializer(message_type, catalog)
-        self._struct = _Item(self.schema["fields"])
+        self._struct = _Record(self.schema["fields"], init=True)
 
     domain = property(lambda self: self._domain, doc="The domain of the message in the catalog")
     message_type = property(lambda self: self._message_type, doc="The message type")
