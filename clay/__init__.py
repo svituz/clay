@@ -19,11 +19,11 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+from clay.exceptions import SchemaException
+
 __author__ = "Massimo Gaggero, Vittorio Meloni"
 __author_email__ = "<massimo.gaggero@crs4.it>, <vittorio.meloni@crs4.it>"
 __url__ = "https://github.com/crs4/clay"
-
-from clay.exceptions import SchemaException
 
 MESSAGE_FACTORIES = {}
 CATALOGS = {}
@@ -34,7 +34,7 @@ class MessageFactoryMetaclass(type):
     def __call__(cls, serializer, catalog):
         try:
             _factory = MESSAGE_FACTORIES[(serializer, catalog['name'])]
-        except KeyError as ke:
+        except KeyError:
             _factory = type.__call__(cls, serializer, catalog)
             MESSAGE_FACTORIES[(serializer, catalog['name'])] = _factory
         return _factory

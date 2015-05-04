@@ -7,3 +7,5 @@ Requirements:
 - Apache Avro Python Library 1.7.7 (http://avro.apache.org/)
 
 [![Build Status](https://travis-ci.org/crs4/clay.svg)](https://travis-ci.org/crs4/clay)
+
+[![Code Health](https://landscape.io/github/crs4/clay/develop/landscape.svg?style=flat)](https://landscape.io/github/crs4/clay/develop)

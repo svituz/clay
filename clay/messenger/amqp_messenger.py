@@ -232,7 +232,8 @@ class AMQPReceiver(object):
         self._queue = {'name': queue_name, 'durable': durable, 'response': response}
 
     def _handler_wrapper(self, channel, method, properties, body):
-
+        if self.handler is None:
+            raise AMQPError("You must set the handler")
         message_type = method.routing_key.split('.')[-1]
         res = self.handler(body, message_type)
         if self._queue['response'] is True:

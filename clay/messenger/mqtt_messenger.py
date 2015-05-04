@@ -1,5 +1,6 @@
 import Queue
-import socket, ssl
+import socket
+import ssl
 import paho.mqtt.publish as MQTTPublisher
 import paho.mqtt.client as MQTTPClient
 
@@ -96,17 +97,17 @@ class MQTTMessenger(Messenger):
 
 
 class MQTTReceiver(object):
-    # """
-    # Class that implements a MQTT broker. The class creates a RabbitMQ *topic* exchange and start
-    # consuming on the queue specified in input. The broker consumes every message with matching the
-    # routing key <queue>.*
-    #
-    # :type host: `string`
-    # :param host: the RabbitMQ server address
-    #
-    # :type port: `int`
-    # :param port: the RabbitMQ MQTT Plugin server port
-    # """
+    """
+    Class that implements a MQTT broker. The class creates a RabbitMQ *topic* exchange and start
+    consuming on the queue specified in input. The broker consumes every message with matching the
+    routing key <queue>.*
+
+    :type host: `string`
+    :param host: the RabbitMQ server address
+
+    :type port: `int`
+    :param port: the RabbitMQ MQTT Plugin server port
+    """
     def __init__(self, host='localhost', port=1883):
         self._host = host
         self._port = port
@@ -117,26 +118,28 @@ class MQTTReceiver(object):
         self._credentials = None
 
     def set_queue(self, queue_name, durable, response):
-    #     """
-    #     Set the queue whose messages the broker will consume. If response is `True` the counterpart
-    #     consumer will receive the return value of the handler
-    #
-    #     :type queue_name: `string`
-    #     :param queue_name: The name of the queue
-    #     :type durable: `boolean`
-    #     :param durable: It specifies if the queue should be durable or not
-    #
-    #     :type response: `boolean`
-    #     :param response: If it's True then the Broker will return to the consumer the result of the
-    #                      handler function
-    #
-    #     """
+        """
+        Set the queue whose messages the broker will consume. If response is `True` the counterpart
+        consumer will receive the return value of the handler
+
+        :type queue_name: `string`
+        :param queue_name: The name of the queue
+        :type durable: `boolean`
+        :param durable: It specifies if the queue should be durable or not
+
+        :type response: `boolean`
+        :param response: If it's True then the Broker will return to the consumer the result of the
+                         handler function
+
+        """
         self._queue = queue_name
 
     def set_credentials(self, username, password):
         self._credentials = {'username': username, 'password': password}
 
     def _handler_wrapper(self, client, userdata, message):
+        if self.handler is None:
+            raise MQTTError("You must set the handler")
         self.handler(message.payload.decode('base64'), message.topic)
 
     def run(self):
