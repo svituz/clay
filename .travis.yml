@@ -6,7 +6,8 @@ before_install:
 services:
   - rabbitmq
 before_script:
-  - rabbitmq-plugins enable rabbitmq_mqtt
+  - sudo rabbitmq-plugins enable rabbitmq_mqtt
+  - sudo service rabbitmq-server restart
 install:
   - python setup.py install
 script:
