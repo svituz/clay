@@ -30,10 +30,9 @@ import pika
 from clay.exceptions import InvalidMessage, SchemaException, InvalidContent
 from clay.factory import MessageFactory
 from clay.serializer import AvroSerializer, AbstractHL7Serializer
-from clay.messenger import AMQPMessenger, AMQPReceiver, AMQPError
 from clay.message import _Record
 
-from tests import TEST_CATALOG, TEST_SCHEMA, RABBIT_QUEUE, RABBIT_EXCHANGE
+from tests import TEST_CATALOG, TEST_SCHEMA
 
 
 class TestMessage(TestCase):
@@ -58,17 +57,6 @@ class TestMessage(TestCase):
 
         self.complex_avro_encoded = '\x02@\x8e\xd1\x87\x01\x06aaa\x00\x02\x06bbb' \
                                     '\x00\x00\x02\x06ccc\x00\x00\x06ddd\x00\x06eee'
-
-    def tearDown(self):
-        self._reset()
-
-    def _reset(self):
-        conn_param = pika.ConnectionParameters('localhost')
-        connection = pika.BlockingConnection(conn_param)
-        channel = connection.channel()
-        channel.exchange_delete(RABBIT_EXCHANGE)
-        channel.queue_delete(RABBIT_QUEUE)
-        connection.close()
 
     def test_message_instantiation(self):
         test_message = self.avro_factory.create("TEST")
@@ -269,104 +257,3 @@ class TestMessage(TestCase):
 
         value = self.complex_avro_message.serialize()
         self.assertEqual(value, self.complex_avro_encoded)
-
-    def test_amqp_transaction_no_response(self):
-        def handler(message_body, message_type):
-            self.assertEqual(message_body, self.avro_encoded)
-            self.assertEqual(message_type, self.avro_message.message_type)
-
-        broker = AMQPReceiver()
-        broker.exchange = RABBIT_EXCHANGE
-        broker.set_queue(RABBIT_QUEUE, False, False)
-        broker.handler = handler
-
-        p = Process(target=broker.run)
-        p.start()
-
-        time.sleep(1)
-
-        messenger = AMQPMessenger()
-        messenger.exchange = RABBIT_EXCHANGE
-        messenger.add_queue(RABBIT_QUEUE, False, False)
-
-        result = messenger.send(self.avro_message)
-        self.assertEqual(result, None)
-        p.terminate()
-        p.join()
-
-    def test_amqp_transaction_response(self):
-        response = 'OK'
-
-        def handler(message_body, message_type):
-            self.assertEqual(message_body, self.avro_encoded)
-            self.assertEqual(message_type, self.avro_message.message_type)
-            return 'OK'
-
-        broker = AMQPReceiver()
-        broker.exchange = RABBIT_EXCHANGE
-        broker.set_queue(RABBIT_QUEUE, False, True)
-        broker.handler = handler
-
-        p = Process(target=broker.run)
-        p.start()
-
-        time.sleep(1)
-
-        messenger = AMQPMessenger()
-        messenger.exchange = RABBIT_EXCHANGE
-        messenger.add_queue(RABBIT_QUEUE, False, True)
-
-        result = messenger.send(self.avro_message)
-        self.assertEqual(result, response)
-        p.terminate()
-        p.join()
-
-    def test_amqp_producer_server_down(self):
-        messenger = AMQPMessenger('localhost', 20000)  # non existent rabbit server
-        messenger.exchange = RABBIT_EXCHANGE
-        messenger.add_queue(RABBIT_QUEUE, False, False)
-
-        result = messenger.send(self.avro_message)
-        self.assertIsNone(result)
-        self.assertEqual(messenger._message_queue.qsize(), 1)
-
-    def test_amqp_producer_non_existent_queue(self):
-        self._reset()
-        messenger = AMQPMessenger()
-        messenger.exchange = RABBIT_EXCHANGE
-
-        # the queue has not been specified yet
-        with self.assertRaises(AMQPError):
-            messenger.send(self.avro_message)
-
-        messenger.add_queue(RABBIT_QUEUE, False, False)
-        result = messenger.send(self.avro_message)
-        self.assertIsNone(result)
-        self.assertEqual(messenger._message_queue.qsize(), 1)
-
-    def test_amqp_receiver_errors(self):
-        broker = AMQPReceiver()
-        self.assertRaisesRegexp(AMQPError, "You must set the AMQP exchange", broker.run)
-        broker.exchange = RABBIT_EXCHANGE
-        self.assertRaisesRegexp(AMQPError, "You must configure the queue", broker.run)
-        broker.set_queue(RABBIT_QUEUE, False, False)
-        self.assertRaisesRegexp(AMQPError, "You must set the handler", broker.run)
-
-    def test_amqp_broker_server_down(self):
-        def handler(message_body, message_type):
-            self.assertEqual(message_body, self.avro_encoded)
-            self.assertEqual(message_type, self.avro_message.message_type)
-
-        broker = AMQPReceiver('localhost', 20000)  # non existent rabbit server
-        broker.handler = handler
-        broker.set_queue(RABBIT_QUEUE, False, True)
-
-        with self.assertRaises(AMQPError) as e:
-            broker.exchange = RABBIT_EXCHANGE
-            self.assertEqual(e.expected, "Cannot connect to AMQP server")
-        with self.assertRaises(AMQPError) as e:
-            broker.run()
-            self.assertEqual(e.expected, "Cannot connect to AMQP server")
-
-if __name__ == '__main__':
-    unittest.main()

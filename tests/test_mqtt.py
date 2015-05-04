@@ -32,7 +32,8 @@ from clay.messenger import MQTTMessenger, MQTTReceiver, MQTTError
 from tests import TEST_CATALOG, RABBIT_QUEUE
 
 
-class TestMessage(TestCase):
+class TestMQTT(TestCase):
+
     def setUp(self):
         self.avro_factory = MessageFactory(AvroSerializer, TEST_CATALOG)
 
@@ -112,6 +113,3 @@ class TestMessage(TestCase):
 
         with self.assertRaises(MQTTError):
             broker.run()
-
-if __name__ == '__main__':
-    unittest.main()

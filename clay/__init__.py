@@ -19,6 +19,10 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+__author__ = "Massimo Gaggero, Vittorio Meloni"
+__author_email__ = "<massimo.gaggero@crs4.it>, <vittorio.meloni@crs4.it>"
+__url__ = "https://github.com/crs4/clay"
+
 from clay.exceptions import SchemaException
 
 MESSAGE_FACTORIES = {}
