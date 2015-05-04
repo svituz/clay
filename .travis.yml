@@ -2,7 +2,7 @@ language: python
 python:
   - "2.7"
 before_install:
-  - pip install pika paho-mqtt avro kafka-python hl7apy
+  - pip install pika paho-mqtt avro kafka-python hl7apy simplejson
 services:
   - rabbitmq
 before_script:
