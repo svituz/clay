@@ -60,16 +60,17 @@ class Serializer(object):
         pass
 
 
-class JSONSerializer(Serializer):
-    def __init__(self, message_type, catalog):
-        pass
-
-    def serialize(self, datum):
-        return simplejson.dumps(datum)
-
-    @staticmethod
-    def deserialize(message, catalog):
-        pass
+# class JSONSerializer(Serializer):
+#     def __init__(self, message_type, catalog):
+#         pass
+#
+#     def serialize(self, datum):
+#         return simplejson.dumps(datum)
+#
+#     @staticmethod
+#     def deserialize(message, catalog):
+#         payload = simplejson.loads(message)
+#         return
 
 
 class DummySerializer(Serializer):
@@ -87,5 +88,10 @@ except ImportError:
 
 try:
     from .hl7_serializer import AbstractHL7Serializer
+except ImportError:
+    pass
+
+try:
+    from .json_serializer import JSONSerializer
 except ImportError:
     pass

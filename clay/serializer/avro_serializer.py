@@ -70,7 +70,7 @@ class AvroSerializer(Serializer):
                 'payload': self.payload_encoder.writer.getvalue()
             }
             self.envelope_writer.write(envelope_message, self.envelope_encoder)
-        except AvroTypeException as aex:
+        except AvroTypeException:
             raise SchemaException(datum)
 
         return self.envelope_encoder.writer.getvalue()

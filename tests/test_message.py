@@ -19,17 +19,11 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import unittest
 from unittest import TestCase
-
-import time
-from multiprocessing import Process
-
-import pika
 
 from clay.exceptions import InvalidMessage, SchemaException, InvalidContent
 from clay.factory import MessageFactory
-from clay.serializer import AvroSerializer, AbstractHL7Serializer
+from clay.serializer import AvroSerializer
 from clay.message import _Record
 
 from tests import TEST_CATALOG, TEST_SCHEMA
@@ -37,39 +31,19 @@ from tests import TEST_CATALOG, TEST_SCHEMA
 
 class TestMessage(TestCase):
     def setUp(self):
-        self.avro_factory = MessageFactory(AvroSerializer, TEST_CATALOG)
-        self.hl7_factory = MessageFactory(AbstractHL7Serializer, TEST_CATALOG)
-
-        self.avro_message = self.avro_factory.create('TEST')
-        self.avro_message.id = 1111111
-        self.avro_message.name = "aaa"
-        self.avro_encoded = '\x00\x10\x8e\xd1\x87\x01\x06aaa'
-
-        self.complex_avro_message = self.avro_factory.create('TEST_COMPLEX')
-        self.complex_avro_message.id = 1111111
-        self.complex_avro_message.name = "aaa"
-        self.complex_avro_message.array_complex_field.add()
-        self.complex_avro_message.array_complex_field[0].field_1 = "bbb"
-        self.complex_avro_message.array_simple_field.add()
-        self.complex_avro_message.array_simple_field[0] = "ccc"
-        self.complex_avro_message.record_field.field_1 = "ddd"
-        self.complex_avro_message.record_field.field_2 = "eee"
-
-        self.complex_avro_encoded = '\x02@\x8e\xd1\x87\x01\x06aaa\x00\x02\x06bbb' \
-                                    '\x00\x00\x02\x06ccc\x00\x00\x06ddd\x00\x06eee'
+        self.factory = MessageFactory(AvroSerializer, TEST_CATALOG)
 
     def test_message_instantiation(self):
-        test_message = self.avro_factory.create("TEST")
+        test_message = self.factory.create("TEST")
         self.assertEqual("TEST", test_message.message_type)
         self.assertEqual(TEST_SCHEMA, test_message.schema)
 
     def test_invalid_message_instantiation(self):
-        self.assertRaises(InvalidMessage, self.avro_factory.create, "UNK")
-        self.assertRaises(InvalidMessage, self.hl7_factory.create, "UNK")
+        self.assertRaises(InvalidMessage, self.factory.create, "UNK")
 
     def test_simple_message_value_assignment(self, m=None):
         if m is None:
-            m = self.avro_factory.create("TEST")
+            m = self.factory.create("TEST")
         self.assertEqual(m.id, None)
         self.assertEqual(m.name, None)
         m.id = 1111111
@@ -83,10 +57,10 @@ class TestMessage(TestCase):
 
     def test_wrong_schema(self):
         with self.assertRaises(SchemaException):
-            self.avro_factory.create("TEST_WRONG")
+            self.factory.create("TEST_WRONG")
 
     def test_complex_message_value_assignment(self):
-        m = self.avro_factory.create("TEST_COMPLEX")
+        m = self.factory.create("TEST_COMPLEX")
         self.test_simple_message_value_assignment(m)
 
         with self.assertRaises(ValueError):
@@ -142,7 +116,7 @@ class TestMessage(TestCase):
         }
 
         # test for the entire message
-        m = self.avro_factory.create("TEST_COMPLEX")
+        m = self.factory.create("TEST_COMPLEX")
         m.set_content(content)
 
         self.assertEqual(m.id, 1111111)
@@ -167,7 +141,7 @@ class TestMessage(TestCase):
         }
 
         # test for the entire message
-        m = self.avro_factory.create("TEST_COMPLEX")
+        m = self.factory.create("TEST_COMPLEX")
         self.assertRaises(AttributeError, m.set_content, content)
 
         # test for _Record and _Array classes
@@ -182,7 +156,7 @@ class TestMessage(TestCase):
             "field_1": "bbb"
         }]
 
-        m = self.avro_factory.create("TEST_COMPLEX")
+        m = self.factory.create("TEST_COMPLEX")
 
         self.assertRaises(InvalidContent, m.array_complex_field.set_content, 1)  # 1 is not iterable
         m.array_complex_field.set_content(None)
@@ -203,7 +177,7 @@ class TestMessage(TestCase):
             "wrong_field_1": "bbb"
         }]
 
-        m = self.avro_factory.create("TEST_COMPLEX")
+        m = self.factory.create("TEST_COMPLEX")
         self.assertRaises(AttributeError, m.array_complex_field.set_content, content)
 
     def test_set_content_record(self):
@@ -212,7 +186,7 @@ class TestMessage(TestCase):
             "field_2": "eee"
         }
 
-        m = self.avro_factory.create("TEST_COMPLEX")
+        m = self.factory.create("TEST_COMPLEX")
 
         self.assertIsNone(m.record_field.as_obj())
         self.assertRaises(AttributeError, getattr, m.record_field, "field_1")
@@ -235,25 +209,7 @@ class TestMessage(TestCase):
             "wrong_field_1": "ddd"
         }
 
-        m = self.avro_factory.create("TEST_COMPLEX")
+        m = self.factory.create("TEST_COMPLEX")
 
         self.assertRaises(AttributeError, m.record_field.set_content, content)
 
-    def test_retrieve(self):
-        m = self.avro_factory.retrieve('\x02@\x8e\xd1\x87\x01\x06aaa\x00\x02\x06bbb'
-                                       '\x00\x00\x02\x06ccc\x00\x00\x06ddd\x00\x06eee')
-        self.assertEqual(m.id, 1111111)
-        self.assertEqual(m.name, "aaa")
-        self.assertEqual(len(m.array_complex_field), 1)
-        self.assertEqual(m.array_complex_field[0].field_1, "bbb")
-        self.assertEqual(len(m.array_simple_field), 1)
-        self.assertEqual(m.array_simple_field[0], "ccc")
-        self.assertEqual(m.record_field.field_1, "ddd")
-        self.assertEqual(m.record_field.field_2, "eee")
-
-    def test_avro_serializer(self):
-        value = self.avro_message.serialize()
-        self.assertEqual(value, self.avro_encoded)
-
-        value = self.complex_avro_message.serialize()
-        self.assertEqual(value, self.complex_avro_encoded)
