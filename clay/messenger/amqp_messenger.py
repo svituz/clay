@@ -1,11 +1,13 @@
 import Queue
 
+import ssl
+
 import pika
-from pika.exceptions import AMQPConnectionError, ChannelClosed
+from pika.exceptions import AMQPConnectionError, ChannelClosed, ConnectionClosed
 
 # Clay library imports
 from . import Messenger
-from ..exceptions import MessengerError
+from ..exceptions import MessengerError, ERROR_CONREF, ERROR_UNKNOWN
 
 
 class AMQPError(MessengerError):
@@ -31,14 +33,13 @@ class AMQPMessenger(Messenger):
         self.host = host
         self.port = port
 
-        self._initialized = False
-
         self._message_queue = Queue.Queue()
 
         self._exchange = None
         self._queues = {}
         self._response = None
         self._credentials = None
+        self._tls = None
 
     def _set_exchange(self, exchange):
         self._exchange = exchange
@@ -47,6 +48,37 @@ class AMQPMessenger(Messenger):
         return self._exchange
 
     exchange = property(_get_exchange, _set_exchange, doc="The RabbitMQ Topic Exchange property")
+
+    def set_tls(self, ca_certs=None, certfile=None, keyfile=None):
+        """
+        Set the key/cert files for TLS/SSL connection.
+
+        :type ca_certs: `basestring`
+        :param ca_certs: a string path to the Certificate Authority certificate files
+
+        :type certfile: `basestring`
+        :param certfile: a string path to the PEM encoded client certificate
+
+        :type keyfile: `basestring`
+        :param keyfile: a string path to the PEM encoded client private key
+
+        If :meth:`set_tls()` is invoked without arguments, the SSL parameters are cleared and TLS/SSL for the
+        connection is disabled.
+
+        .. note::
+            Certificates/keys path must be set using :meth:`set_tls()` before the message is sent.
+        """
+
+        if (ca_certs, certfile, keyfile) == (None, None, None):
+            self._tls = None
+        else:
+            self._tls = {
+                'ca_certs':    ca_certs,
+                'certfile':    certfile,
+                'keyfile':     keyfile,
+                'ssl_version': ssl.PROTOCOL_TLSv1,
+                'ciphers':     None
+            }
 
     def set_credentials(self, username, password):
         """
@@ -66,10 +98,10 @@ class AMQPMessenger(Messenger):
 
     def add_queue(self, name, durable, response):
         """
-        Add a queue to the messenger. This operation is necessary to send messages of a particualar domain.
+        Add a queue to the messenger. This operation is necessary to send messages of a particular domain.
         For example, if you have a message belonging to TEST domain, you'll need to add the "TEST" queue to the
         messenger.
-        If the queue was already present, it will overvrite it
+        If the queue was already present, it will overwrite it.
 
         :type name: `str`
         :param name: the name of the queue: it has to be equal to the domain of messages to be sent to the queue
@@ -119,7 +151,10 @@ class AMQPMessenger(Messenger):
             conn_param = pika.ConnectionParameters(
                 host=self.host,
                 port=self.port,
-                credentials=self._credentials)
+                credentials=self._credentials,
+                ssl=True if self._tls is not None else None,
+                ssl_options=self._tls)
+
             connection = pika.BlockingConnection(conn_param)
             channel = connection.channel()
 
@@ -195,24 +230,65 @@ class AMQPReceiver(object):
         self._exchange = None
         self._queue = None
         self.handler = None
+        self._credentials = None
+        self._tls = None
 
     def _set_exchange(self, exchange):
         try:
             self._exchange = exchange
-            conn_param = pika.ConnectionParameters(host=self.host, port=self.port)
+            conn_param = pika.ConnectionParameters(
+                host=self.host,
+                port=self.port,
+                credentials=self._credentials,
+                ssl=True if self._tls is not None else None,
+                ssl_options=self._tls)
 
             connection = pika.BlockingConnection(conn_param)
             channel = connection.channel()
 
             channel.exchange_declare(self.exchange, type='topic', durable=True)
             connection.close()
-        except AMQPConnectionError:
-            raise AMQPError
+        except AMQPConnectionError as acex:
+            if len(acex.args) == 1 and acex.args[0] == 1:
+                raise MessengerError(ERROR_CONREF)
+            else:
+                raise MessengerError(ERROR_UNKNOWN)
 
     def _get_exchange(self):
         return self._exchange
 
     exchange = property(_get_exchange, _set_exchange, doc="The RabbitMQ Topic Exchange property")
+
+    def set_tls(self, ca_certs=None, certfile=None, keyfile=None):
+        """
+        Set the key/cert files for TLS/SSL connection.
+
+        :type ca_certs: `basestring`
+        :param ca_certs: a string path to the Certificate Authority certificate files
+
+        :type certfile: `basestring`
+        :param certfile: a string path to the PEM encoded client certificate
+
+        :type keyfile: `basestring`
+        :param keyfile: a string path to the PEM encoded client private key
+
+        If :meth:`set_tls()` is invoked without arguments, the SSL parameters are cleared and TLS/SSL for the
+        connection is disabled.
+
+        .. note::
+            Certificates/keys path must be set using :meth:`set_tls()` before the message is sent.
+        """
+
+        if (ca_certs, certfile, keyfile) == (None, None, None):
+            self._tls = None
+        else:
+            self._tls = {
+                'ca_certs':    ca_certs,
+                'certfile':    certfile,
+                'keyfile':     keyfile,
+                'ssl_version': ssl.PROTOCOL_TLSv1,
+                'ciphers':     None
+            }
 
     def set_queue(self, queue_name, durable, response):
         """
@@ -240,7 +316,13 @@ class AMQPReceiver(object):
             channel.basic_publish('', routing_key=properties.reply_to, body=res)
 
     def run(self):
-        conn_param = pika.ConnectionParameters(host=self.host, port=self.port)
+        conn_param = pika.ConnectionParameters(
+            host=self.host,
+            port=self.port,
+            credentials=self._credentials,
+            ssl=True if self._tls is not None else None,
+            ssl_options=self._tls)
+
         if self.exchange is None:
             raise AMQPError("You must set the AMQP exchange")
 

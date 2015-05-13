@@ -19,6 +19,13 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+ERROR_UNKNOWN = 0
+ERROR_CONREF = 1
+
+MESSENGER_ERROR_STRINGS = {
+    ERROR_UNKNOWN: "error is unknown",
+    ERROR_CONREF: "connection was refused",
+}
 
 class SchemaException(Exception):
     pass
@@ -44,6 +51,10 @@ class MessengerError(Exception):
     """
     Generic exception raised when a messenger error occurs
     """
-    pass
+    def __init__(self, error_type):
+        self.error_type = error_type
+
+    def __str__(self):
+        return "Messenger %s" % MESSENGER_ERROR_STRINGS[self.error_type]
 
 # vim:tabstop=4:expandtab
