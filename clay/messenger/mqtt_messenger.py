@@ -6,11 +6,8 @@ import paho.mqtt.client as MQTTPClient
 
 # Clay library imports
 from . import Messenger
-from ..exceptions import MessengerError
-
-
-class MQTTError(MessengerError):
-    pass
+from ..exceptions import MessengerErrorConnectionRefused, MessengerErrorNoExchange, \
+    MessengerErrorNoHandler, MessengerErrorNoQueue
 
 
 class MQTTMessenger(Messenger):
@@ -84,10 +81,11 @@ class MQTTMessenger(Messenger):
         try:
             self._queues[message.domain]
         except KeyError:
-            raise MQTTError("No queue specified for this message")
+            raise MessengerErrorNoQueue()
 
         try:
             routing_key = "{}/{}".format(message.domain, message.message_type)
+            print routing_key, self.host, self.port, self._credentials, self._tls
             MQTTPublisher.single(
                 topic=routing_key,
                 payload=message.serialize().encode('base64'),
@@ -181,7 +179,7 @@ class MQTTReceiver(object):
 
     def _handler_wrapper(self, client, userdata, message):
         if self.handler is None:
-            raise MQTTError("You must set the handler")
+            raise MessengerErrorNoHandler()
         self.handler(message.payload.decode('base64'), message.topic)
 
     def run(self):
@@ -202,7 +200,7 @@ class MQTTReceiver(object):
         try:
             self._client.connect(host=self._host, port=self._port)
         except socket.error as se:
-            raise MQTTError('MQTTReceiver: connection refused')
+            raise MessengerErrorConnectionRefused()
 
         self._client.subscribe(self._queue + '/#')
         self._client.loop_forever()

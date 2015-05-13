@@ -19,7 +19,6 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import unittest
 from unittest import TestCase
 
 import time
@@ -27,7 +26,8 @@ from multiprocessing import Process
 
 from clay.factory import MessageFactory
 from clay.serializer import AvroSerializer
-from clay.messenger import MQTTMessenger, MQTTReceiver, MQTTError
+from clay.messenger import MQTTMessenger, MQTTReceiver
+from clay.exceptions import MessengerError, MessengerErrorNoQueue, MessengerErrorConnectionRefused
 
 from tests import TEST_CATALOG, RABBIT_QUEUE
 
@@ -93,7 +93,7 @@ class TestMQTT(TestCase):
         messenger = MQTTMessenger()
 
         # the queue has not been specified yet
-        with self.assertRaises(MQTTError):
+        with self.assertRaises(MessengerErrorNoQueue):
             messenger.send(self.avro_message)
 
         messenger.add_queue(RABBIT_QUEUE, False, False)
@@ -111,5 +111,5 @@ class TestMQTT(TestCase):
         broker.handler = handler
         broker.set_queue(RABBIT_QUEUE, False, True)
 
-        with self.assertRaises(MQTTError):
+        with self.assertRaises(MessengerErrorConnectionRefused):
             broker.run()

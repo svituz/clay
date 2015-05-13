@@ -25,9 +25,11 @@ from unittest import TestCase
 
 import pika
 
-from clay.messenger import AMQPMessenger, AMQPReceiver, AMQPError
+from clay.messenger import AMQPMessenger, AMQPReceiver
 from clay.factory import MessageFactory
 from clay.serializer import AvroSerializer, AbstractHL7Serializer
+from clay.exceptions import MessengerErrorConnectionRefused, MessengerErrorNoExchange, \
+    MessengerErrorNoHandler, MessengerErrorNoQueue
 
 from tests import TEST_CATALOG, RABBIT_QUEUE, RABBIT_EXCHANGE
 
@@ -133,7 +135,7 @@ class TestAMQP(TestCase):
         messenger.exchange = RABBIT_EXCHANGE
 
         # the queue has not been specified yet
-        with self.assertRaises(AMQPError):
+        with self.assertRaises(MessengerErrorNoQueue):
             messenger.send(self.avro_message)
 
         messenger.add_queue(RABBIT_QUEUE, False, False)
@@ -143,11 +145,11 @@ class TestAMQP(TestCase):
 
     def test_amqp_receiver_errors(self):
         broker = AMQPReceiver()
-        self.assertRaisesRegexp(AMQPError, "You must set the AMQP exchange", broker.run)
+        self.assertRaises(MessengerErrorNoExchange, broker.run)
         broker.exchange = RABBIT_EXCHANGE
-        self.assertRaisesRegexp(AMQPError, "You must configure the queue", broker.run)
+        self.assertRaisesRegexp(MessengerErrorNoQueue, broker.run)
         broker.set_queue(RABBIT_QUEUE, False, False)
-        self.assertRaisesRegexp(AMQPError, "You must set the handler", broker.run)
+        self.assertRaisesRegexp(MessengerErrorNoHandler, broker.run)
 
     def test_amqp_broker_server_down(self):
         def handler(message_body, message_type):
@@ -158,9 +160,7 @@ class TestAMQP(TestCase):
         broker.handler = handler
         broker.set_queue(RABBIT_QUEUE, False, True)
 
-        with self.assertRaises(AMQPError) as e:
+        with self.assertRaises(MessengerErrorConnectionRefused) as e:
             broker.exchange = RABBIT_EXCHANGE
-            self.assertEqual(e.expected, "Cannot connect to AMQP server")
-        with self.assertRaises(AMQPError) as e:
+        with self.assertRaises(MessengerErrorConnectionRefused) as e:
             broker.run()
-            self.assertEqual(e.expected, "Cannot connect to AMQP server")

@@ -3,18 +3,13 @@ import Queue
 import ssl
 
 import pika
-from pika.exceptions import AMQPConnectionError, ChannelClosed, ConnectionClosed
+from pika.exceptions import AMQPConnectionError, ChannelClosed
 
 # Clay library imports
 from . import Messenger
-from ..exceptions import MessengerError, ERROR_CONREF, ERROR_UNKNOWN
+from ..exceptions import MessengerError, MessengerErrorConnectionRefused, MessengerErrorNoExchange, \
+    MessengerErrorNoHandler, MessengerErrorNoQueue
 
-
-class AMQPError(MessengerError):
-    """
-    Exceptions raised when an AMQP error occurs
-    """
-    pass
 
 
 class AMQPMessenger(Messenger):
@@ -143,7 +138,7 @@ class AMQPMessenger(Messenger):
         try:
             queue = self._queues[message.domain]
         except KeyError:
-            raise AMQPError("No queue specified for this message")
+            raise MessengerErrorNoQueue()
 
         try:
             routing_key = "{}.{}".format(message.domain, message.message_type)
@@ -203,7 +198,7 @@ class AMQPMessenger(Messenger):
                 print "No connection, queuing"
                 print "There are {0} messages in the queue".format(self._message_queue.qsize())
             else:
-                raise AMQPError("Cannot connect to AMQP server")
+                raise MessengerError("ERROR_CONREFUSED")
 
         return result
 
@@ -250,9 +245,9 @@ class AMQPReceiver(object):
             connection.close()
         except AMQPConnectionError as acex:
             if len(acex.args) == 1 and acex.args[0] == 1:
-                raise MessengerError(ERROR_CONREF)
+                raise MessengerErrorConnectionRefused()
             else:
-                raise MessengerError(ERROR_UNKNOWN)
+                raise MessengerError()
 
     def _get_exchange(self):
         return self._exchange
@@ -309,7 +304,7 @@ class AMQPReceiver(object):
 
     def _handler_wrapper(self, channel, method, properties, body):
         if self.handler is None:
-            raise AMQPError("You must set the handler")
+            raise MessengerErrorNoHandler()
         message_type = method.routing_key.split('.')[-1]
         res = self.handler(body, message_type)
         if self._queue['response'] is True:
@@ -324,13 +319,13 @@ class AMQPReceiver(object):
             ssl_options=self._tls)
 
         if self.exchange is None:
-            raise AMQPError("You must set the AMQP exchange")
+            raise MessengerErrorNoExchange()
 
         if self._queue is None:
-            raise AMQPError("You must configure the queue")
+            raise MessengerErrorNoQueue()
 
         if self.handler is None:
-            raise AMQPError("You must set the handler")
+            raise MessengerErrorNoHandler()
 
         try:
             self._connection = pika.BlockingConnection(conn_param)
@@ -351,7 +346,7 @@ class AMQPReceiver(object):
 
             self._channel.start_consuming()
         except AMQPConnectionError:
-            raise AMQPError("Cannot connect to AMQP server")
+            raise MessengerErrorConnectionRefused()
 
     def stop(self):
         try:

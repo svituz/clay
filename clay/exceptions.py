@@ -19,13 +19,12 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-ERROR_UNKNOWN = 0
-ERROR_CONREF = 1
-
 MESSENGER_ERROR_STRINGS = {
-    ERROR_UNKNOWN: "error is unknown",
-    ERROR_CONREF: "connection was refused",
+    "ERROR_NOQUEUE": "no queue specified for this message",
+    "ERROR_NOHANDLER": "no handler defined",
+    "ERROR_NOEXCHANGE": "no exchange specified"
 }
+
 
 class SchemaException(Exception):
     pass
@@ -51,10 +50,27 @@ class MessengerError(Exception):
     """
     Generic exception raised when a messenger error occurs
     """
-    def __init__(self, error_type):
-        self.error_type = error_type
-
     def __str__(self):
-        return "Messenger %s" % MESSENGER_ERROR_STRINGS[self.error_type]
+        return "Messenger error"
+
+
+class MessengerErrorConnectionRefused(MessengerError):
+    def __str__(self):
+        return "Messenger connection has been refused"
+
+
+class MessengerErrorNoQueue(MessengerError):
+    def __str__(self):
+        return "No queue defined for this message"
+
+
+class MessengerErrorNoHandler(MessengerError):
+    def __str__(self):
+        return "No handler defined"
+
+
+class MessengerErrorNoExchange(MessengerError):
+    def __str__(self):
+        return "No exchange defined"
 
 # vim:tabstop=4:expandtab
