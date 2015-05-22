@@ -76,8 +76,8 @@ class MessengerErrorNoHandler(MessengerError):
         return "No handler defined"
 
 
-class MessengerErrorNoExchange(MessengerError):
+class MessengerErrorNoApplicationName(MessengerError):
     def __str__(self):
-        return "No exchange defined"
+        return "No application name defined"
 
 # vim:tabstop=4:expandtab

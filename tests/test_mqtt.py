@@ -27,9 +27,9 @@ from multiprocessing import Process
 from clay.factory import MessageFactory
 from clay.serializer import AvroSerializer
 from clay.messenger import MQTTMessenger, MQTTReceiver
-from clay.exceptions import MessengerError, MessengerErrorNoQueue, MessengerErrorConnectionRefused
+from clay.exceptions import MessengerErrorNoQueue, MessengerErrorConnectionRefused
 
-from tests import TEST_CATALOG, RABBIT_QUEUE
+from tests import TEST_CATALOG, RABBIT_QUEUE, RABBIT_EXCHANGE
 
 
 class TestMQTT(TestCase):
@@ -64,6 +64,7 @@ class TestMQTT(TestCase):
             self.assertEqual(message_type, self.avro_message.message_type)
 
         broker = MQTTReceiver()
+        broker.application_name = RABBIT_EXCHANGE
         broker.set_queue(RABBIT_QUEUE, False, False)
         broker.handler = handler
 
@@ -73,6 +74,7 @@ class TestMQTT(TestCase):
         time.sleep(1)
 
         messenger = MQTTMessenger()
+        messenger.application_name = RABBIT_EXCHANGE
         messenger.add_queue(RABBIT_QUEUE, False, False)
 
         result = messenger.send(self.avro_message)
@@ -82,6 +84,7 @@ class TestMQTT(TestCase):
 
     def test_mqtt_producer_server_down(self):
         messenger = MQTTMessenger('localhost', 20000)  # non existent rabbit server
+        messenger.application_name = RABBIT_EXCHANGE
         messenger.add_queue(RABBIT_QUEUE, False, False)
 
         result = messenger.send(self.avro_message)
@@ -96,6 +99,7 @@ class TestMQTT(TestCase):
         with self.assertRaises(MessengerErrorNoQueue):
             messenger.send(self.avro_message)
 
+        messenger.application_name = RABBIT_EXCHANGE
         messenger.add_queue(RABBIT_QUEUE, False, False)
         result = messenger.send(self.avro_message)
 
@@ -109,6 +113,8 @@ class TestMQTT(TestCase):
 
         broker = MQTTReceiver('localhost', 20000)  # non existent rabbit server
         broker.handler = handler
+
+        broker.application_name = RABBIT_EXCHANGE
         broker.set_queue(RABBIT_QUEUE, False, True)
 
         with self.assertRaises(MessengerErrorConnectionRefused):

@@ -28,7 +28,7 @@ import pika
 from clay.messenger import AMQPMessenger, AMQPReceiver
 from clay.factory import MessageFactory
 from clay.serializer import AvroSerializer, AbstractHL7Serializer
-from clay.exceptions import MessengerErrorConnectionRefused, MessengerErrorNoExchange, \
+from clay.exceptions import MessengerErrorConnectionRefused, MessengerErrorNoApplicationName, \
     MessengerErrorNoHandler, MessengerErrorNoQueue
 
 from tests import TEST_CATALOG, RABBIT_QUEUE, RABBIT_EXCHANGE
@@ -75,7 +75,7 @@ class TestAMQP(TestCase):
             self.assertEqual(message_type, self.avro_message.message_type)
 
         broker = AMQPReceiver()
-        broker.exchange = RABBIT_EXCHANGE
+        broker.application_name = RABBIT_EXCHANGE
         broker.set_queue(RABBIT_QUEUE, False, False)
         broker.handler = handler
 
@@ -85,7 +85,7 @@ class TestAMQP(TestCase):
         time.sleep(1)
 
         messenger = AMQPMessenger()
-        messenger.exchange = RABBIT_EXCHANGE
+        messenger.application_name = RABBIT_EXCHANGE
         messenger.add_queue(RABBIT_QUEUE, False, False)
 
         result = messenger.send(self.avro_message)
@@ -102,7 +102,7 @@ class TestAMQP(TestCase):
             return 'OK'
 
         broker = AMQPReceiver()
-        broker.exchange = RABBIT_EXCHANGE
+        broker.application_name = RABBIT_EXCHANGE
         broker.set_queue(RABBIT_QUEUE, False, True)
         broker.handler = handler
 
@@ -112,7 +112,7 @@ class TestAMQP(TestCase):
         time.sleep(1)
 
         messenger = AMQPMessenger()
-        messenger.exchange = RABBIT_EXCHANGE
+        messenger.application_name = RABBIT_EXCHANGE
         messenger.add_queue(RABBIT_QUEUE, False, True)
 
         result = messenger.send(self.avro_message)
@@ -122,7 +122,7 @@ class TestAMQP(TestCase):
 
     def test_amqp_producer_server_down(self):
         messenger = AMQPMessenger('localhost', 20000)  # non existent rabbit server
-        messenger.exchange = RABBIT_EXCHANGE
+        messenger.application_name = RABBIT_EXCHANGE
         messenger.add_queue(RABBIT_QUEUE, False, False)
 
         result = messenger.send(self.avro_message)
@@ -132,7 +132,7 @@ class TestAMQP(TestCase):
     def test_amqp_producer_non_existent_queue(self):
         self._reset()
         messenger = AMQPMessenger()
-        messenger.exchange = RABBIT_EXCHANGE
+        messenger.application_name = RABBIT_EXCHANGE
 
         # the queue has not been specified yet
         with self.assertRaises(MessengerErrorNoQueue):
@@ -145,9 +145,9 @@ class TestAMQP(TestCase):
 
     def test_amqp_receiver_errors(self):
         broker = AMQPReceiver()
-        self.assertRaises(MessengerErrorNoExchange, broker.run)
-        broker.exchange = RABBIT_EXCHANGE
-        self.assertRaises(MessengerErrorNoQueue, broker.run)
+        self.assertRaises(MessengerErrorNoApplicationName, broker.run)
+        broker.application_name = RABBIT_EXCHANGE
+        self.assertRaisesRegexp(MessengerErrorNoQueue, broker.run)
         broker.set_queue(RABBIT_QUEUE, False, False)
         self.assertRaises(MessengerErrorNoHandler, broker.run)
 
@@ -161,6 +161,6 @@ class TestAMQP(TestCase):
         broker.set_queue(RABBIT_QUEUE, False, True)
 
         with self.assertRaises(MessengerErrorConnectionRefused) as e:
-            broker.exchange = RABBIT_EXCHANGE
+            broker.application_name = RABBIT_EXCHANGE
         with self.assertRaises(MessengerErrorConnectionRefused) as e:
             broker.run()
