@@ -19,7 +19,10 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import simplejson
+import sys
+
+from .. import _CustomLoader
+from ..exceptions import MissingDependency
 
 
 class Serializer(object):
@@ -60,19 +63,6 @@ class Serializer(object):
         pass
 
 
-# class JSONSerializer(Serializer):
-#     def __init__(self, message_type, catalog):
-#         pass
-#
-#     def serialize(self, datum):
-#         return simplejson.dumps(datum)
-#
-#     @staticmethod
-#     def deserialize(message, catalog):
-#         payload = simplejson.loads(message)
-#         return
-
-
 class DummySerializer(Serializer):
     def __init__(self, message_type):
         pass
@@ -80,18 +70,30 @@ class DummySerializer(Serializer):
     def serialize(self, datum):
         return datum
 
+
 # Imports the other Serializers
 try:
     from .avro_serializer import AvroSerializer
-except ImportError:
+except MissingDependency:
     pass
 
 try:
     from .hl7_serializer import AbstractHL7Serializer
-except ImportError:
+except MissingDependency:
     pass
 
 try:
     from .json_serializer import JSONSerializer
-except ImportError:
+except MissingDependency:
     pass
+
+
+class _SerializerLoader(_CustomLoader):
+
+    DEPENDENCIES = {
+        "clay.serializer.AvroSerializer": "avro",
+        "clay.serializer.AbstractHL7Serializer": "hl7apy",
+        "clay.serializer.JSONSerializer": "simplejson",
+    }
+
+sys.meta_path.append(_SerializerLoader())

@@ -19,7 +19,10 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from clay.exceptions import SchemaException
+import sys
+import imp
+
+from clay.exceptions import SchemaException, MissingDependency
 
 __author__ = "Massimo Gaggero, Vittorio Meloni"
 __author_email__ = "<massimo.gaggero@crs4.it>, <vittorio.meloni@crs4.it>"
@@ -28,6 +31,30 @@ __url__ = "https://github.com/crs4/clay"
 MESSAGE_FACTORIES = {}
 CATALOGS = {}
 NAMED_CATALOGS = {}
+
+class _CustomLoader(object):
+
+    DEPENDENCIES = {}
+
+    def find_module(self, name, path=None):
+        if name in self.DEPENDENCIES:
+            self.path = path
+            return self
+        return None
+
+    def load_module(self, name):
+        if name in sys.modules:
+            return sys.modules[name]
+
+        try:
+            module_info = imp.find_module(name.split(".")[-1], self.path)
+            module = imp.load_module(name, *module_info)
+        except ImportError:
+            raise MissingDependency(self.DEPENDENCIES[name])
+        else:
+            sys.modules[name] = module
+
+        return module
 
 
 class MessageFactoryMetaclass(type):

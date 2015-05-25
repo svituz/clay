@@ -19,8 +19,11 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# Third party imports
-from hl7apy.parser import get_message_info
+from ..exceptions import MissingDependency
+try:
+    from hl7apy.parser import get_message_info
+except ImportError:
+    raise MissingDependency("hl7apy")
 
 # Communication Layer Imports
 from . import Serializer

@@ -27,7 +27,7 @@ from clay.serializer import JSONSerializer
 from tests import TEST_CATALOG
 
 
-class TestMessage(TestCase):
+class TestJSON(TestCase):
     def setUp(self):
         self.factory = MessageFactory(JSONSerializer, TEST_CATALOG)
 

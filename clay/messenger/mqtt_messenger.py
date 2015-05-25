@@ -1,12 +1,19 @@
 import Queue
 import socket
 import ssl
-import paho.mqtt.publish as MQTTPublisher
-import paho.mqtt.client as MQTTPClient
+
+from ..exceptions import MissingDependency
+
+try:
+    from paho.mqtt import publish as MQTTPublisher
+except ImportError:
+    raise MissingDependency("paho")
+
+from paho.mqtt import client as MQTTPClient
 
 # Clay library imports
 from . import Messenger
-from ..exceptions import MessengerErrorConnectionRefused, MessengerErrorNoExchange, \
+from ..exceptions import MessengerErrorConnectionRefused, \
     MessengerErrorNoHandler, MessengerErrorNoQueue
 
 
@@ -85,7 +92,6 @@ class MQTTMessenger(Messenger):
 
         try:
             routing_key = "{}/{}".format(message.domain, message.message_type)
-            print routing_key, self.host, self.port, self._credentials, self._tls
             MQTTPublisher.single(
                 topic=routing_key,
                 payload=message.serialize().encode('base64'),

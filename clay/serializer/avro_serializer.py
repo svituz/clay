@@ -21,8 +21,14 @@
 
 from cStringIO import StringIO
 
+from ..exceptions import MissingDependency
+
 # AVRO Imports
-import avro.schema
+try:
+    import avro.schema
+except ImportError:
+    raise MissingDependency("avro")
+
 from avro.io import DatumWriter, DatumReader, BinaryEncoder, BinaryDecoder, AvroTypeException
 
 # Package Imports

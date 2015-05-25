@@ -1,7 +1,12 @@
 import Queue
 
-from kafka.client import KafkaClient
-from kafka.producer import SimpleProducer
+from ..exceptions import MissingDependency
+try:
+    from kafka import client as KafkaClient
+except ImportError:
+    raise MissingDependency("kafka")
+
+from kafka import producer as SimpleProducer
 
 # Clay library imports
 from . import Messenger

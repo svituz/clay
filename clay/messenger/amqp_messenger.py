@@ -2,14 +2,19 @@ import Queue
 
 import ssl
 
-import pika
+from ..exceptions import MissingDependency
+
+try:
+    import pika
+except ImportError:
+    raise MissingDependency("pika")
+
 from pika.exceptions import AMQPConnectionError, ChannelClosed
 
 # Clay library imports
 from . import Messenger
 from ..exceptions import MessengerError, MessengerErrorConnectionRefused, MessengerErrorNoExchange, \
     MessengerErrorNoHandler, MessengerErrorNoQueue
-
 
 
 class AMQPMessenger(Messenger):

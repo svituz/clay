@@ -147,9 +147,9 @@ class TestAMQP(TestCase):
         broker = AMQPReceiver()
         self.assertRaises(MessengerErrorNoExchange, broker.run)
         broker.exchange = RABBIT_EXCHANGE
-        self.assertRaisesRegexp(MessengerErrorNoQueue, broker.run)
+        self.assertRaises(MessengerErrorNoQueue, broker.run)
         broker.set_queue(RABBIT_QUEUE, False, False)
-        self.assertRaisesRegexp(MessengerErrorNoHandler, broker.run)
+        self.assertRaises(MessengerErrorNoHandler, broker.run)
 
     def test_amqp_broker_server_down(self):
         def handler(message_body, message_type):

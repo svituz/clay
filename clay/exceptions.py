@@ -30,6 +30,13 @@ class SchemaException(Exception):
     pass
 
 
+class MissingDependency(Exception):
+    def __init__(self, requirement_name):
+        self.requirement_name = requirement_name
+
+    def __str__(self):
+        return "The required package '{}' is not installed. Install it to use the module".format(self.requirement_name)
+
 class InvalidMessage(Exception):
     """
     Raised when the message type does not exists in the catalog
