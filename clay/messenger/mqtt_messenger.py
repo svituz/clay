@@ -13,7 +13,7 @@ from paho.mqtt import client as MQTTPClient
 
 # Clay library imports
 from . import Messenger
-from ..exceptions import MessengerErrorConnectionRefused, \
+from ..exceptions import MessengerErrorConnectionRefused, MessengerErrorNoApplicationName, \
     MessengerErrorNoHandler, MessengerErrorNoQueue
 
 
@@ -37,9 +37,18 @@ class MQTTMessenger(Messenger):
 
         self._spooling_queue = Queue.Queue()
 
+        self._app_name = None
         self._queues = {}
         self._credentials = None
         self._tls = None
+
+    def _set_application_name(self, app_name):
+        self._app_name = app_name
+
+    def _get_application_name(self):
+        return self._app_name
+
+    application_name = property(_get_application_name, _set_application_name, doc="The Application Name property")
 
     def set_tls(self, ca_certs=None, certfile=None, keyfile=None):
         """
@@ -90,8 +99,11 @@ class MQTTMessenger(Messenger):
         except KeyError:
             raise MessengerErrorNoQueue()
 
+        if self._app_name is None:
+            raise MessengerErrorNoApplicationName()
+
         try:
-            routing_key = "{}/{}".format(message.domain, message.message_type)
+            routing_key = "{}/{}/{}".format(self._app_name, message.domain, message.message_type)
             MQTTPublisher.single(
                 topic=routing_key,
                 payload=message.serialize().encode('base64'),
@@ -128,9 +140,18 @@ class MQTTReceiver(object):
         self.handler = None
 
         self._client = MQTTPClient.Client()
+        self._app_name = None
         self._queue = None
         self._credentials = None
         self._tls = None
+
+    def _set_application_name(self, app_name):
+        self._app_name = app_name
+
+    def _get_application_name(self):
+        return self._app_name
+
+    application_name = property(_get_application_name, _set_application_name, doc="The Application Name property")
 
     def set_queue(self, queue_name, durable, response):
         """
@@ -201,14 +222,18 @@ class MQTTReceiver(object):
                                  keyfile=self._tls['keyfile'],
                                  tls_version=self._tls['tls_version'],
                                  ciphers=self._tls['ciphers'])
+
         self._client.on_message = self._handler_wrapper
+
+        if self._app_name is None:
+            raise MessengerErrorNoApplicationName()
 
         try:
             self._client.connect(host=self._host, port=self._port)
         except socket.error as se:
             raise MessengerErrorConnectionRefused()
 
-        self._client.subscribe(self._queue + '/#')
+        self._client.subscribe('/'.join([self._app_name, self._queue, '#']))
         self._client.loop_forever()
 
     def stop(self):

@@ -13,7 +13,7 @@ from pika.exceptions import AMQPConnectionError, ChannelClosed
 
 # Clay library imports
 from . import Messenger
-from ..exceptions import MessengerError, MessengerErrorConnectionRefused, MessengerErrorNoExchange, \
+from ..exceptions import MessengerError, MessengerErrorConnectionRefused, MessengerErrorNoApplicationName, \
     MessengerErrorNoHandler, MessengerErrorNoQueue
 
 
@@ -35,19 +35,19 @@ class AMQPMessenger(Messenger):
 
         self._message_queue = Queue.Queue()
 
-        self._exchange = None
+        self._app_name = None
         self._queues = {}
         self._response = None
         self._credentials = None
         self._tls = None
 
-    def _set_exchange(self, exchange):
-        self._exchange = exchange
+    def _set_application_name(self, app_name):
+        self._app_name = app_name
 
-    def _get_exchange(self):
-        return self._exchange
+    def _get_application_name(self):
+        return self._app_name
 
-    exchange = property(_get_exchange, _set_exchange, doc="The RabbitMQ Topic Exchange property")
+    application_name = property(_get_application_name, _set_application_name, doc="The Application Name property")
 
     def set_tls(self, ca_certs=None, certfile=None, keyfile=None):
         """
@@ -170,7 +170,7 @@ class AMQPMessenger(Messenger):
                                       no_ack=True)
 
                 channel.basic_publish(
-                    exchange=self.exchange,
+                    exchange=self._app_name,
                     routing_key=routing_key,
                     body=message.serialize(),
                     mandatory=True,
@@ -187,7 +187,7 @@ class AMQPMessenger(Messenger):
 
             else:
                 channel.basic_publish(
-                    exchange=self.exchange,
+                    exchange=self._app_name,
                     routing_key=routing_key,
                     body=message.serialize(),
                     mandatory=True,
@@ -227,15 +227,15 @@ class AMQPReceiver(object):
         self._channel = None
         self._connection = None
 
-        self._exchange = None
+        self._app_name = None
         self._queue = None
         self.handler = None
         self._credentials = None
         self._tls = None
 
-    def _set_exchange(self, exchange):
+    def _set_application_name(self, app_name):
         try:
-            self._exchange = exchange
+            self._app_name = app_name
             conn_param = pika.ConnectionParameters(
                 host=self.host,
                 port=self.port,
@@ -246,7 +246,7 @@ class AMQPReceiver(object):
             connection = pika.BlockingConnection(conn_param)
             channel = connection.channel()
 
-            channel.exchange_declare(self.exchange, type='topic', durable=True)
+            channel.exchange_declare(self._app_name, type='topic', durable=True)
             connection.close()
         except AMQPConnectionError as acex:
             if len(acex.args) == 1 and acex.args[0] == 1:
@@ -254,10 +254,10 @@ class AMQPReceiver(object):
             else:
                 raise MessengerError()
 
-    def _get_exchange(self):
-        return self._exchange
+    def _get_application_name(self):
+        return self._app_name
 
-    exchange = property(_get_exchange, _set_exchange, doc="The RabbitMQ Topic Exchange property")
+    application_name = property(_get_application_name, _set_application_name, doc="The Application Name property")
 
     def set_tls(self, ca_certs=None, certfile=None, keyfile=None):
         """
@@ -323,8 +323,8 @@ class AMQPReceiver(object):
             ssl=True if self._tls is not None else None,
             ssl_options=self._tls)
 
-        if self.exchange is None:
-            raise MessengerErrorNoExchange()
+        if self._app_name is None:
+            raise MessengerErrorNoApplicationName()
 
         if self._queue is None:
             raise MessengerErrorNoQueue()
@@ -342,7 +342,7 @@ class AMQPReceiver(object):
                 durable=self._queue['durable'])
 
             self._channel.queue_bind(
-                exchange=self.exchange,
+                exchange=self._app_name,
                 queue=self._queue['name'],
                 routing_key="{}.*".format(self._queue['name']))
 
