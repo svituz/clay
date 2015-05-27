@@ -147,7 +147,7 @@ class TestAMQP(TestCase):
         broker = AMQPReceiver()
         self.assertRaises(MessengerErrorNoApplicationName, broker.run)
         broker.application_name = RABBIT_EXCHANGE
-        self.assertRaisesRegexp(MessengerErrorNoQueue, broker.run)
+        self.assertRaises(MessengerErrorNoQueue, broker.run)
         broker.set_queue(RABBIT_QUEUE, False, False)
         self.assertRaises(MessengerErrorNoHandler, broker.run)
 
