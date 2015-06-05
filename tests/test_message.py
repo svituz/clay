@@ -213,3 +213,64 @@ class TestMessage(TestCase):
 
         self.assertRaises(AttributeError, m.record_field.set_content, content)
 
+    def test_message_equality(self):
+        m1 = self.factory.create("TEST_COMPLEX")
+        m2 = self.factory.create("TEST_COMPLEX")
+        self.assertEqual(m1, m2)
+        content = {
+            "id": 1111111,
+            "name": "aaa",
+            "array_complex_field": [
+                {"field_1": "bbb"},
+                {"field_1": "ccc"}
+            ],
+            "array_simple_field": ["ccc", "ddd"],
+            "record_field": {
+                "field_1": "ddd"
+            }
+        }
+        m1.set_content(content)
+        m2.set_content(content)
+        self.assertEqual(m1, m2)
+
+        m2._domain = "OTHER DOMAIN"
+        self.assertNotEqual(m1, m2)
+        m2._domain = m1._domain  # reset domain
+
+        m1._message_type = "OTHER MESSAGE TYPE"
+        self.assertNotEqual(m1, m2)
+        m2._message_type = m1._message_type  # reset message_type
+
+    def test_fields_equality(self):
+        m1 = self.factory.create("TEST_COMPLEX")
+        m2 = self.factory.create("TEST_COMPLEX")
+
+        self.assertEqual(m1.array_complex_field, None)
+        self.assertEqual(m1.array_simple_field, None)
+        self.assertEqual(m1.record_field, None)
+
+        content = {
+            "id": 1111111,
+            "name": "aaa",
+            "array_complex_field": [
+                {"field_1": "bbb"},
+                {"field_1": "ccc"}
+            ],
+            "array_simple_field": ["ccc", "ddd"],
+            "record_field": {
+                "field_1": "ddd"
+            }
+        }
+
+        m1.set_content(content)
+        m2.set_content(content)
+        self.assertEqual(m1.array_complex_field, m2.array_complex_field)
+        self.assertEqual(m1.array_simple_field, m2.array_simple_field)
+        self.assertEqual(m1.record_field, m2.record_field)
+
+        m1.array_complex_field[0].field_1 = "aaa"
+        m1.array_simple_field[0] = "aaa"
+        m1.record_field.field_1 = "aaa"
+        self.assertNotEqual(m1.array_complex_field, m2.array_complex_field)
+        self.assertNotEqual(m1.array_simple_field, m2.array_simple_field)
+        self.assertNotEqual(m1.record_field, m2.record_field)

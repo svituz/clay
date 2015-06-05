@@ -117,7 +117,7 @@ class _Record(object):
             raise AttributeError
 
     def __setattr__(self, key, value):
-        if key in ('_fields_name', '_schema', '_content'):
+        if key in ("_fields_name", "_schema", "_content"):
             super(_Record, self).__setattr__(key, value)
         elif key in self._fields_name:
             if self._is_none():
@@ -136,6 +136,9 @@ class _Record(object):
 
     def __repr__(self):
         return repr(self.as_obj())
+
+    def __eq__(self, other):
+        return self._content == other
 
 
 class _Array(object):
@@ -196,6 +199,9 @@ class _Array(object):
 
     def __repr__(self):
         return repr(self._content)
+
+    def __eq__(self, other):
+        return self._content == other
 
 
 class Message(object):
@@ -310,5 +316,11 @@ class Message(object):
             return getattr(self._struct, name)
         except:
             raise AttributeError("%r object has no attribute %r" % (self.__class__.__name__, name))
+
+    def __eq__(self, other):
+        return self.schema == other.schema and \
+            self.message_type == other.message_type and \
+            self.domain == other.domain and \
+            self.fields == other.fields
 
 # vim:tabstop=4:expandtab
