@@ -148,7 +148,7 @@ class _Array(object):
         if _is_primitive_type(fields):
             self.fields_schema = fields
         else:
-            self.fields_schema = fields['fields']
+            self.fields_schema = fields["fields"]
 
     content = property(lambda self: self._as_obj())
 
@@ -196,6 +196,10 @@ class _Array(object):
 
     def __delitem__(self, index):
         del self._content[index]
+
+    def __iter__(self):
+        for item in self._content:
+            yield item
 
     def __len__(self):
         return len(self._content)
@@ -276,7 +280,6 @@ class Message(object):
             self.schema = schema_from_name(message_type, catalog)[1]
         except SchemaException:
             raise InvalidMessage(message_type)
-
         self._message_type = message_type
         self._domain = self.schema["namespace"]
         self._serializer = serializer(message_type, catalog)

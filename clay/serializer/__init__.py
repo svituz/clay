@@ -20,6 +20,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import sys
+from collections import defaultdict
 
 from .. import CustomLoader
 from ..exceptions import MissingDependency
@@ -71,11 +72,28 @@ class DummySerializer(Serializer):
         return datum
 
 
+class Cache(object):
+
+    _inst = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._inst is None:
+            cls._inst = object.__new__(cls, *args, **kwargs)
+        return cls._inst
+
+    def __init__(self):
+        if "_cache" not in vars(self):
+            self._cache = defaultdict(dict)
+
+
 # Imports the other Serializers
 try:
-    from .avro_serializer import AvroSerializer
+    from .pyavroc_serializer import AvroSerializer
 except MissingDependency:
-    pass
+    try:
+        from .avro_serializer import AvroSerializer
+    except MissingDependency:
+        pass
 
 try:
     from .hl7_serializer import AbstractHL7Serializer

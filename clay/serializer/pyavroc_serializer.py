@@ -19,17 +19,15 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from cStringIO import StringIO
-
 from ..exceptions import MissingDependency
+
+import simplejson
 
 # AVRO Imports
 try:
-    import avro.schema
+    import pyavroc
 except ImportError:
-    raise MissingDependency("avro")
-
-from avro.io import DatumWriter, DatumReader, BinaryEncoder, BinaryDecoder, AvroTypeException
+    raise MissingDependency("pyavroc")
 
 # Package Imports
 from . import Serializer, Cache
@@ -46,8 +44,7 @@ ENVELOPE_SCHEMA = {
     ]
 }
 
-
-class AvroCache(Cache):
+class PyAvrocCache(Cache):
 
     SER = 0
     DESER = 1
@@ -60,12 +57,10 @@ class AvroCache(Cache):
             obj = cache[ser_name]
         except KeyError:
             if obj_type == self.SER:
-                schema_obj = avro.schema.make_avsc_object(schema)
-                obj = DatumWriter(schema_obj)
+                obj = pyavroc.AvroSerializer(simplejson.dumps(schema))
             else:
-                schema_obj = avro.schema.make_avsc_object(schema)
-                obj = DatumReader(schema_obj)
-            cache[ser_name] = obj
+                obj = pyavroc.AvroDeserializer(simplejson.dumps(schema))
+            self._cache[ser_name] = obj
         return obj
 
 
@@ -78,35 +73,29 @@ class AvroSerializer(Serializer):
         schema_id, schema = schema_from_name(message_type, schema_catalog)
         self.payload_schema_id = schema_id
 
-        self._payload_writer = AvroCache().get(AvroCache.SER, schema)
-        self._envelope_writer = AvroCache().get(AvroCache.SER, ENVELOPE_SCHEMA)
+        self._payload_ser = PyAvrocCache().get(PyAvrocCache.SER, schema)
+        self._envelope_ser = PyAvrocCache().get(PyAvrocCache.SER, ENVELOPE_SCHEMA)
 
     def serialize(self, datum):
-        payload_encoder = BinaryEncoder(StringIO())
-        envelope_encoder = BinaryEncoder(StringIO())
-
         try:
-            self._payload_writer.write(datum, payload_encoder)
-            envelope_message = {
-                "id": self.payload_schema_id,
-                "payload": payload_encoder.writer.getvalue()
-            }
-            self._envelope_writer.write(envelope_message, envelope_encoder)
-        except AvroTypeException:
+            payload = self._payload_ser.serialize(datum)
+        except IOError:
             raise SchemaException(datum)
-
-        return envelope_encoder.writer.getvalue()
+        obj = {"id": self.payload_schema_id, "payload": payload}
+        res = self._envelope_ser.serialize(obj)
+        return res
 
     @staticmethod
     def deserialize(message, catalog):
-        envelope_reader = AvroCache().get(AvroCache.DESER, ENVELOPE_SCHEMA)
-        envelope_decoder = BinaryDecoder(StringIO(message))
-        envelope = envelope_reader.read(envelope_decoder)
+        envelope_deser = PyAvrocCache().get(PyAvrocCache.DESER, ENVELOPE_SCHEMA)
+        envelope = envelope_deser.deserialize(message)
 
         payload_id = envelope["id"]
         payload_schema = catalog[payload_id]
-        payload_reader = AvroCache().get(AvroCache.DESER, payload_schema)
-        payload_decoder = BinaryDecoder(StringIO(envelope["payload"]))
-        payload = payload_reader.read(payload_decoder)
+
+        payload_deser = PyAvrocCache().get(PyAvrocCache.DESER, payload_schema)
+        payload = payload_deser.deserialize(envelope["payload"])
 
         return payload, payload_id, payload_schema
+
+# vim:tabstop=4:expandtab
