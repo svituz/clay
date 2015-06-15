@@ -21,7 +21,7 @@
 
 import sys
 
-from .. import _CustomLoader
+from .. import CustomLoader
 from ..exceptions import MissingDependency
 
 
@@ -88,7 +88,7 @@ except MissingDependency:
     pass
 
 
-class _SerializerLoader(_CustomLoader):
+class _SerializerLoader(CustomLoader):
 
     DEPENDENCIES = {
         "clay.serializer.AvroSerializer": "avro",

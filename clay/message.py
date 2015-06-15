@@ -306,10 +306,13 @@ class Message(object):
             self._struct.set_content(content)
 
     def __setattr__(self, name, value):
-        try:
-            setattr(self._struct, name, value)
-        except AttributeError:
+        if name in ("schema", "_message_type", "_domain", "_serializer", "_struct"):
             super(Message, self).__setattr__(name, value)
+        else:
+            try:
+                setattr(self._struct, name, value)
+            except AttributeError:
+                super(Message, self).__setattr__(name, value)
 
     def __getattr__(self, name):
         try:

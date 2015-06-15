@@ -1,6 +1,6 @@
 import sys
 import logging
-from .. import _CustomLoader
+from .. import CustomLoader
 from ..exceptions import MissingDependency
 
 logging.basicConfig()
@@ -37,7 +37,7 @@ try:
 except MissingDependency:
     pass
 
-class _MessengerLoader(_CustomLoader):
+class _MessengerLoader(CustomLoader):
 
     DEPENDENCIES = {
         "clay.messenger.AMQPMessenger": "pika",

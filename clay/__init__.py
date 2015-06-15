@@ -32,7 +32,7 @@ MESSAGE_FACTORIES = {}
 CATALOGS = {}
 NAMED_CATALOGS = {}
 
-class _CustomLoader(object):
+class CustomLoader(object):
 
     DEPENDENCIES = {}
 
