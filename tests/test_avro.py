@@ -21,39 +21,52 @@
 
 from unittest import TestCase
 
-from clay.exceptions import InvalidMessage, SchemaException, InvalidContent
+from clay.exceptions import SchemaException
 from clay.factory import MessageFactory
-from clay.serializer import AvroSerializer, AbstractHL7Serializer, JSONSerializer
+from clay.serializer.avro_serializer import AvroSerializer
 
 from tests import TEST_CATALOG
 
 
-class TestMessage(TestCase):
+class TestAvroSerializer(TestCase):
     def setUp(self):
-        self.factory = MessageFactory(AvroSerializer, TEST_CATALOG)
+        self.avro_factory = MessageFactory(AvroSerializer, TEST_CATALOG)
 
-        self.simple_message = self.factory.create('TEST')
-        self.simple_message.id = 1111111
-        self.simple_message.name = "aaa"
-        self.avro_encoded = '\x00\x10\x8e\xd1\x87\x01\x06aaa'
+        self.simple_msg_content = {"id": 1111111, "name": u"aaa"}
+        self.complex_msg_content = {
+            "valid": True,
+            "id": 1111111,
+            "long_id": 10**18,
+            "float_id": 1.232,
+            "double_id": 1e-60,
+            "name": "aaa",
+            "record_field": {
+                "field_2": u"eee",
+                "field_1": u"ddd"
+            },
+            "array_simple_field": ["ccc"],
+            "array_complex_field": [
+                {"field_1": "bbb"}
+            ]
+        }
 
-        self.complex_message = self.factory.create('TEST_COMPLEX')
-        self.complex_message.id = 1111111
-        self.complex_message.name = "aaa"
-        self.complex_message.array_complex_field.add()
-        self.complex_message.array_complex_field[0].field_1 = "bbb"
-        self.complex_message.array_simple_field.add()
-        self.complex_message.array_simple_field[0] = "ccc"
-        self.complex_message.record_field.field_1 = "ddd"
-        self.complex_message.record_field.field_2 = "eee"
+        self.avro_simple = self.avro_factory.create("TEST")
+        self.avro_simple.set_content(self.simple_msg_content)
+        self.simple_encoded = "\x00\x10\x8e\xd1\x87\x01\x06aaa"
 
-        self.complex_encoded = "\x02@\x8e\xd1\x87\x01\x06aaa\x00\x02\x06bbb" \
-                               "\x00\x00\x02\x06ccc\x00\x00\x06ddd\x00\x06eee"
+        self.avro_complex = self.avro_factory.create("TEST_COMPLEX")
+        self.avro_complex.set_content(self.complex_msg_content)
+        self.complex_encoded = '\x02l\x01\x8e\xd1\x87\x01\x80\x80\xa0\xf6\xf4\xac\xdb\xe0\x1b-\xb2\x9d?&\xa6' \
+                               '\xac\xaa\x04\xb6y3\x06aaa\x00\x02\x06bbb\x00\x00\x02\x06ccc\x00\x00\x06ddd\x00\x06eee'
 
     def test_retrieve(self):
-        m = self.factory.retrieve(self.complex_encoded)
+        m = self.avro_factory.retrieve(self.complex_encoded)
 
+        self.assertEqual(m.valid, True)
         self.assertEqual(m.id, 1111111)
+        self.assertEqual(m.long_id, 10**18)
+        self.assertEqual(round(m.float_id, 3), 1.232)  # TODO: Avro seems to have wrong behavior with float
+        self.assertEqual(m.double_id, 1e-60)
         self.assertEqual(m.name, "aaa")
         self.assertEqual(len(m.array_complex_field), 1)
         self.assertEqual(m.array_complex_field[0].field_1, "bbb")
@@ -63,13 +76,13 @@ class TestMessage(TestCase):
         self.assertEqual(m.record_field.field_2, "eee")
 
     def test_avro_serializer(self):
-        value = self.simple_message.serialize()
-        self.assertEqual(value, self.avro_encoded)
+        value = self.avro_simple.serialize()
+        self.assertEqual(value, self.simple_encoded)
 
-        value = self.complex_message.serialize()
+        value = self.avro_complex.serialize()
         self.assertEqual(value, self.complex_encoded)
 
     def test_wrong_schema(self):
         # setting wrong type for the value (it should be int)
-        self.complex_message.id = "111111"
-        self.assertRaises(SchemaException, self.complex_message.serialize)
+        self.avro_complex.id = "111111"
+        self.assertRaises(SchemaException, self.avro_complex.serialize)

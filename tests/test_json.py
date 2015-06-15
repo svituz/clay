@@ -31,28 +31,41 @@ class TestJSON(TestCase):
     def setUp(self):
         self.factory = MessageFactory(JSONSerializer, TEST_CATALOG)
 
+        simple_msg_content = {"id": 1111111, "name": u"aaa"}
+        complex_msg_content = {
+            "valid": True,
+            "id": 1111111,
+            "long_id": 10**18,
+            "float_id": 1.232,
+            "double_id": 1e-60,
+            "name": "aaa",
+            "record_field": {
+                "field_2": u"eee",
+                "field_1": u"ddd"
+            },
+            "array_simple_field": ["ccc"],
+            "array_complex_field": [
+                {"field_1": "bbb"}
+            ]
+        }
+
         self.simple_message = self.factory.create('TEST')
-        self.simple_message.id = 1111111
-        self.simple_message.name = "aaa"
+        self.simple_message.set_content(simple_msg_content)
         self.simple_encoded = '{"id": 0, "payload": {"id": 1111111, "name": "aaa"}}'
 
         self.complex_message = self.factory.create('TEST_COMPLEX')
-        self.complex_message.id = 1111111
-        self.complex_message.name = "aaa"
-        self.complex_message.array_complex_field.add()
-        self.complex_message.array_complex_field[0].field_1 = "bbb"
-        self.complex_message.array_simple_field.add()
-        self.complex_message.array_simple_field[0] = "ccc"
-        self.complex_message.record_field.field_1 = "ddd"
-        self.complex_message.record_field.field_2 = "eee"
-
+        self.complex_message.set_content(complex_msg_content)
         self.complex_encoded = '{"id": 1, "payload": {"record_field": {"field_2": "eee", "field_1": "ddd"}, ' \
-                               '"array_simple_field": ["ccc"], "array_complex_field": [{"field_1": "bbb"}], ' \
-                               '"id": 1111111, "name": "aaa"}}'
+                               '"array_simple_field": ["ccc"], "name": "aaa", "float_id": 1.232, ' \
+                               '"long_id": 1000000000000000000, "double_id": 1e-60, "valid": true, ' \
+                               '"array_complex_field": [{"field_1": "bbb"}], "id": 1111111}}'
 
     def test_retrieve(self):
         m = self.factory.retrieve(self.complex_encoded)
         self.assertEqual(m.id, 1111111)
+        self.assertEqual(m.long_id, 10**18)
+        self.assertEqual(m.float_id, 1.232)
+        self.assertEqual(m.double_id, 1e-60)
         self.assertEqual(m.name, "aaa")
         self.assertEqual(len(m.array_complex_field), 1)
         self.assertEqual(m.array_complex_field[0].field_1, "bbb")

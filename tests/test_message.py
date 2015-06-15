@@ -61,6 +61,7 @@ class TestMessage(TestCase):
 
     def test_complex_message_value_assignment(self):
         m = self.factory.create("TEST_COMPLEX")
+        print m.fields
         self.test_simple_message_value_assignment(m)
 
         with self.assertRaises(ValueError):

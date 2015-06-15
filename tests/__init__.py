@@ -38,7 +38,11 @@ TEST_COMPLEX_SCHEMA = {
     "name": "TEST_COMPLEX",
     "type": "record",
     "fields": [
+        {"name": "valid", "type": "boolean", "default": "true"},
         {"name": "id", "type": "int"},
+        {"name": "long_id", "type": "long"},
+        {"name": "float_id", "type": "float"},
+        {"name": "double_id", "type": "double"},
         {"name": "name", "type": "string"},
         {"name": "array_complex_field",
          "type": [{
