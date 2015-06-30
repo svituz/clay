@@ -337,9 +337,14 @@ class AMQPReceiver(object):
 
             self._channel = self._connection.channel()
 
-            self._channel.queue_declare(
-                queue=self._queue['name'],
-                durable=self._queue['durable'])
+            if self._queue['response']:
+                self._channel.queue_declare(
+                    queue=self._queue['name'],
+                    auto_delete=True)
+            else:
+                self._channel.queue_declare(
+                    queue=self._queue['name'],
+                    durable=self._queue['durable'])
 
             self._channel.queue_bind(
                 exchange=self._app_name,
