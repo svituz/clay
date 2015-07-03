@@ -26,7 +26,7 @@ from clay.factory import MessageFactory
 from clay.serializer import AvroSerializer
 from clay.message import _Record
 
-from tests import TEST_CATALOG, TEST_SCHEMA
+from tests import TEST_CATALOG, TEST_SCHEMA, TEST_COMPLEX_SCHEMA
 
 
 class TestMessage(TestCase):
@@ -35,8 +35,21 @@ class TestMessage(TestCase):
 
     def test_message_instantiation(self):
         test_message = self.factory.create("TEST")
-        self.assertEqual("TEST", test_message.message_type)
-        self.assertEqual(TEST_SCHEMA, test_message.schema)
+        self.assertEqual(test_message.message_type, "TEST")
+        self.assertEqual(test_message.schema, TEST_SCHEMA)
+        self.assertEqual(test_message.fields, ("id", "name"))
+        self.assertEqual(test_message.content, {"id": None, "name": None})
+
+        test_message = self.factory.create("TEST_COMPLEX")
+        self.assertEqual(test_message.message_type, "TEST_COMPLEX")
+        self.assertEqual(test_message.schema, TEST_COMPLEX_SCHEMA)
+        self.assertEqual(test_message.fields, ("valid", "id", "long_id", "float_id", "double_id",
+                                               "name", "array_complex_field", "array_simple_field", "record_field"))
+        self.assertEqual(test_message.content, {"valid": "true", "id": None, "long_id": None, "float_id": None,
+                                                "double_id": None, "name": None, "array_complex_field": None,
+                                                "array_simple_field": None, "record_field": None})
+        self.assertEqual(test_message.record_field.fields, ("field_1", "field_2"))
+        self.assertEqual(test_message.record_field.content, None)
 
     def test_invalid_message_instantiation(self):
         self.assertRaises(InvalidMessage, self.factory.create, "UNK")
@@ -61,7 +74,6 @@ class TestMessage(TestCase):
 
     def test_complex_message_value_assignment(self):
         m = self.factory.create("TEST_COMPLEX")
-        print m.fields
         self.test_simple_message_value_assignment(m)
 
         with self.assertRaises(ValueError):
@@ -105,20 +117,26 @@ class TestMessage(TestCase):
 
     def test_set_content_message(self):
         content = {
+            "valid": True,
             "id": 1111111,
+            "long_id": 1*10e60,
+            "float_id": 1.32,
+            "double_id": 1*10e-60,
             "name": "aaa",
             "array_complex_field": [{
                 "field_1": "bbb"
             }],
             "array_simple_field": ["ccc"],
             "record_field": {
-                "field_1": "ddd"
+                "field_1": "ddd",
+                "field_2": "eee"
             }
         }
 
         # test for the entire message
         m = self.factory.create("TEST_COMPLEX")
         m.set_content(content)
+        self.assertEqual(m.content, content)
 
         self.assertEqual(m.id, 1111111)
         self.assertEqual(m.name, "aaa")
@@ -161,7 +179,7 @@ class TestMessage(TestCase):
 
         self.assertRaises(InvalidContent, m.array_complex_field.set_content, 1)  # 1 is not iterable
         m.array_complex_field.set_content(None)
-        self.assertEqual(m.array_complex_field.as_obj(), None)
+        self.assertEqual(m.array_complex_field.content, None)
         # self.assertRaises(ValueError, m.array_complex_field.add, "value")
         self.assertRaises(TypeError, m.array_complex_field.__getitem__, 0)
         self.assertRaises(TypeError, m.array_complex_field.__delitem__, 0)
@@ -169,9 +187,9 @@ class TestMessage(TestCase):
         self.assertRaises(TypeError, len, m.array_complex_field)
 
         m.array_complex_field.set_content([])
-        self.assertEqual(m.array_complex_field.as_obj(), [])
+        self.assertEqual(m.array_complex_field.content, [])
         m.array_complex_field.set_content(content)
-        self.assertEqual(m.array_complex_field.as_obj(), [{"field_1": "bbb"}])
+        self.assertEqual(m.array_complex_field.content, [{"field_1": "bbb"}])
 
     def test_set_content_array_wrong(self):
         content = [{
@@ -189,7 +207,7 @@ class TestMessage(TestCase):
 
         m = self.factory.create("TEST_COMPLEX")
 
-        self.assertIsNone(m.record_field.as_obj())
+        self.assertIsNone(m.record_field.content)
         self.assertRaises(AttributeError, getattr, m.record_field, "field_1")
         self.assertRaises(AttributeError, getattr, m.record_field, "field_2")
         m.record_field.field_1 = 'ddd'
@@ -197,7 +215,7 @@ class TestMessage(TestCase):
         self.assertIsNone(m.record_field.field_2)
 
         m.record_field.set_content(None)
-        self.assertIsNone(m.record_field.as_obj())
+        self.assertIsNone(m.record_field.content)
         self.assertRaises(AttributeError, getattr, m.record_field, "field_1")
         self.assertRaises(AttributeError, getattr, m.record_field, "field_2")
 

@@ -41,13 +41,30 @@ def _is_primitive_type(t):
 class _Record(object):
     def __init__(self, schema, init=False):
         self._schema = schema
-        self._fields_name = [field["name"] for field in self.schema]
+        self.fields = tuple(field["name"] for field in self.schema)
         if init:
             self._init_fields()
         else:
             self._content = None
 
     schema = property(lambda self: self._schema)
+    content = property(lambda self: self._as_obj())
+
+    def set_content(self, content):
+        if content is not None and not isinstance(content, MutableMapping):
+            raise InvalidContent()
+
+        if content is None:
+            self._content = None
+        else:
+            if self._is_none():
+                self._init_fields()
+            for k, v in content.iteritems():
+                try:
+                    setattr(self, k, v)
+                except ValueError:  # complex datatype
+                    attr = getattr(self, k)
+                    attr.set_content(v)
 
     def _init_fields(self):
         # Method to reinitialize the fields. It is used on the first initialization and when the _Record was set to None
@@ -76,36 +93,20 @@ class _Record(object):
     def _is_none(self):
         return self._content is None
 
-    def as_obj(self):
+    def _as_obj(self):
         if self._is_none():
             return None
         d = {}
-        for attr in self._fields_name:
+        for attr in self.fields:
             value = getattr(self, attr)
             try:
-                d[attr] = value.as_obj()
+                d[attr] = value._as_obj()
             except AttributeError:
                 d[attr] = value
         return d
 
-    def set_content(self, content):
-        if content is not None and not isinstance(content, MutableMapping):
-            raise InvalidContent()
-
-        if content is None:
-            self._content = None
-        else:
-            if self._is_none():
-                self._init_fields()
-            for k, v in content.iteritems():
-                try:
-                    setattr(self, k, v)
-                except ValueError:  # complex datatype
-                    attr = getattr(self, k)
-                    attr.set_content(v)
-
     def __getattr__(self, item):
-        if item not in self._fields_name:
+        if item not in self.fields:
             raise AttributeError("%r object has no attribute %r" % (self.__class__.__name__, item))
 
         if self._is_none():
@@ -117,9 +118,9 @@ class _Record(object):
             raise AttributeError
 
     def __setattr__(self, key, value):
-        if key in ("_fields_name", "_schema", "_content"):
+        if key in ("fields", "_schema", "_content"):
             super(_Record, self).__setattr__(key, value)
-        elif key in self._fields_name:
+        elif key in self.fields:
             if self._is_none():
                 self._init_fields()
             try:
@@ -135,7 +136,7 @@ class _Record(object):
             raise AttributeError("%r object has no attribute %r" % (self.__class__.__name__, key))
 
     def __repr__(self):
-        return repr(self.as_obj())
+        return repr(self._as_obj())
 
     def __eq__(self, other):
         return self._content == other
@@ -149,8 +150,7 @@ class _Array(object):
         else:
             self.fields_schema = fields['fields']
 
-    def _is_none(self):
-        return self._content is None
+    content = property(lambda self: self._as_obj())
 
     def add(self, content=None):
         if self._is_none():
@@ -176,14 +176,17 @@ class _Array(object):
             for item in content:
                 self.add(item)
 
-    def as_obj(self):
+    def _as_obj(self):
         if self._is_none() or _is_primitive_type(self.fields_schema):
             return self._content
         else:
             d = []
             for item in self._content:
-                d.append(item.as_obj())
+                d.append(item._as_obj())
             return d
+
+    def _is_none(self):
+        return self._content is None
 
     def __setitem__(self, index, item):
         self._content[index] = item
@@ -281,7 +284,8 @@ class Message(object):
 
     domain = property(lambda self: self._domain, doc="The domain of the message in the catalog")
     message_type = property(lambda self: self._message_type, doc="The message type")
-    fields = property(lambda self: self._struct.as_obj(), doc="The dictionary representation of the message")
+    content = property(lambda self: self._struct.content, doc="The dictionary representation of the message")
+    fields = property(lambda self: self._struct.fields)
 
     def serialize(self):
         """
@@ -290,7 +294,7 @@ class Message(object):
         :rtype: `str`
         :return: The serialized message
         """
-        return self._serializer.serialize(self._struct.as_obj())
+        return self._serializer.serialize(self._struct.content)
 
     def set_content(self, content=None):
         """
@@ -324,6 +328,6 @@ class Message(object):
         return self.schema == other.schema and \
             self.message_type == other.message_type and \
             self.domain == other.domain and \
-            self.fields == other.fields
+            self.content == other.content
 
 # vim:tabstop=4:expandtab
