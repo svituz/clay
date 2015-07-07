@@ -100,7 +100,7 @@ class _Record(object):
         for attr in self.fields:
             value = getattr(self, attr)
             try:
-                d[attr] = value._as_obj()
+                d[attr] = value.content
             except AttributeError:
                 d[attr] = value
         return d
@@ -182,7 +182,7 @@ class _Array(object):
         else:
             d = []
             for item in self._content:
-                d.append(item._as_obj())
+                d.append(item.content)
             return d
 
     def _is_none(self):
