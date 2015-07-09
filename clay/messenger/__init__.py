@@ -3,7 +3,8 @@ import logging
 from .. import CustomLoader
 from ..exceptions import MissingDependency
 
-logging.basicConfig()
+# Workaround to avoid pika logging
+logging.basicConfig(level=logging.CRITICAL)
 
 
 class Messenger(object):
@@ -46,26 +47,6 @@ class _MessengerLoader(CustomLoader):
         "clay.messenger.MQTTReceiver": "paho",
         "clay.messenger.KafkaMessenger": "kafka",
     }
-
-    # def find_module(self, name, path=None):
-    #     if name in self.DEPENDENCIES:
-    #         self.path = path
-    #         return self
-    #     return None
-    #
-    # def load_module(self, name):
-    #     if name in sys.modules:
-    #         return sys.modules[name]
-    #
-    #     try:
-    #         module_info = imp.find_module(name.split(".")[-1], self.path)
-    #         module = imp.load_module(name, *module_info)
-    #     except ImportError:
-    #         raise MissingDependency(self.DEPENDENCIES[name])
-    #     else:
-    #         sys.modules[name] = module
-    #
-    #     return module
 
 sys.meta_path.append(_MessengerLoader())
 
