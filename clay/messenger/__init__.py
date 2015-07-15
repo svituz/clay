@@ -3,9 +3,6 @@ import logging
 from .. import CustomLoader
 from ..exceptions import MissingDependency
 
-# Workaround to avoid pika logging
-logging.basicConfig(level=logging.CRITICAL)
-
 
 class Messenger(object):
     def __init__(self):

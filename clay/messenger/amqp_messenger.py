@@ -1,5 +1,5 @@
 import Queue
-
+import logging
 import ssl
 
 from ..exceptions import MissingDependency
@@ -8,6 +8,9 @@ try:
     import pika
 except ImportError:
     raise MissingDependency("pika")
+else:
+    pika_logger = logging.getLogger('pika')
+    pika_logger.setLevel(logging.CRITICAL)
 
 from pika.exceptions import AMQPConnectionError, ChannelClosed
 
