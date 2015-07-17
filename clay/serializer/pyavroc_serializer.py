@@ -79,7 +79,7 @@ class AvroSerializer(Serializer):
     def serialize(self, datum):
         try:
             payload = self._payload_ser.serialize(datum)
-        except IOError:
+        except (IOError, TypeError):
             raise SchemaException(datum)
         obj = {"id": self.payload_schema_id, "payload": payload}
         res = self._envelope_ser.serialize(obj)
