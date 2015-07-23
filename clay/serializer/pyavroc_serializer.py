@@ -44,6 +44,7 @@ ENVELOPE_SCHEMA = {
     ]
 }
 
+
 class PyAvrocCache(Cache):
 
     SER = 0
@@ -79,7 +80,7 @@ class AvroSerializer(Serializer):
     def serialize(self, datum):
         try:
             payload = self._payload_ser.serialize(datum)
-        except (IOError, TypeError):
+        except (IOError, TypeError) as e:
             raise SchemaException(datum)
         obj = {"id": self.payload_schema_id, "payload": payload}
         res = self._envelope_ser.serialize(obj)

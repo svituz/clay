@@ -69,6 +69,15 @@ class AvroCache(Cache):
         return obj
 
 
+class CustomEncoder(BinaryEncoder):
+    # This encoder fix problems with utf8 characters
+    def write_utf8(self, datum):
+        try:
+            self.write_bytes(datum.encode("utf-8"))
+        except UnicodeDecodeError:
+            self.write_bytes(unicode(datum, "utf-8").encode("utf-8"))
+
+
 class AvroSerializer(Serializer):
     """
     Class to serialize and deserialize messages using Avro
@@ -82,7 +91,7 @@ class AvroSerializer(Serializer):
         self._envelope_writer = AvroCache().get(AvroCache.SER, ENVELOPE_SCHEMA)
 
     def serialize(self, datum):
-        payload_encoder = BinaryEncoder(StringIO())
+        payload_encoder = CustomEncoder(StringIO())
         envelope_encoder = BinaryEncoder(StringIO())
 
         try:

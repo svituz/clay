@@ -99,3 +99,12 @@ class TestAvroSerializer(TestCase):
             # setting wrong type for the value (it should be int)
             m.id = "111111"
             self.assertRaises(SchemaException, m.serialize)
+
+    def test_utf8_encoding(self):
+        target = "\x00\x10\x02\x0ctest\xc3\xa0"
+        for factory in self.factories:
+            for s in u"testà", "testà":
+                m = factory.create("TEST")
+                m.id = 1
+                m.name = s
+                self.assertEqual(m.serialize(), target)
