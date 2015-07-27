@@ -11,8 +11,7 @@ before_install:
   - git clone https://github.com/crs4/pyavroc.git /tmp/pyavroc
   - sed -i 's/[ -d $AVRO ] || git clone -b patches http:\/\/github.com\/Byhiras\/avro $(basename $AVRO)/[ -d $AVRO ] || git clone -b fix_c_default http:\/\/github.com\/crs4\/avro $(basename $AVRO)/g' /tmp/pyavroc/clone_avro_and_build.sh
   - /tmp/pyavroc/clone_avro_and_build.sh
-  - cd /tmp/pyavroc
-  - python setup.py install
+  - export $PYTHONPATH=/tmp/pyavroc/build/lib.linux-x86_64-2.7/:/tmp/pyavroc/build/lib.linux-x86_64-2.7/pyavroc
 services:
   - rabbitmq
 before_script:
